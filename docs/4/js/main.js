@@ -34,6 +34,7 @@ window.addEventListener('DOMContentLoaded', (event) => {
         appendEls(novel, nvl.make(parser.els));
         document.querySelector(`[name="${type.value}"]`).style.display='block';
         document.querySelector(`[name="pager"]`).style.display = ('scroll'===e.target.value ? 'none' : 'block');
+        updatePage();
     });
     manuscript.dispatchEvent(new Event('input'));
     type.addEventListener('input', async(e)=>{
@@ -59,8 +60,8 @@ window.addEventListener('DOMContentLoaded', (event) => {
     prev.addEventListener('click', async(e)=>{getPager().showPrevPage();updatePage();});
 //    next.addEventListener('click', async(e)=>{sld.showNextPage();updatePage();});
 //    prev.addEventListener('click', async(e)=>{sld.showPrevPage();updatePage();});
-    updatePage();
-    next.focus();
+//    updatePage();
+//    next.focus();
 });
 window.addEventListener('beforeunload', (event) => {
     console.log('beforeunload!!');

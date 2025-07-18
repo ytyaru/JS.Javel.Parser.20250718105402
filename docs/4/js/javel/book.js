@@ -108,24 +108,35 @@ class Novel extends Slide {
             p.append(node);
             r = p.getBoundingClientRect();
             if (this._.size.block < r.bottom) {
-                /*
                 if (node.TEXT_NODE===node.nodeType) {//テキストノードなら単語単位で分割する
-                    node.remove(); // p要素から離脱
+//                    node.remove(); // p要素から離脱
+                    el.prepend(node); // p要素から離脱し元に戻す
                     let i = 0;
-                    const words = node.textContent.words;
+                    const words = node.textContent.words();
+                    console.log(words)
+                    p.append('');
                     for (let i=0; i<words.length; i++) {
-                        p.append(words[i]);
+                        console.log(p, p.lastChild)
+//                        p.append(words[i]);
+                        p.lastChild.textContent += words[i];
                         r = p.getBoundingClientRect();
                         if (this._.size.block < r.bottom) {
-                            p.lastChild.textContent.splice(-1, 1); // 末尾の一字を消す
-                            node.textContent = words.slice(i).join('');
+                            console.log(words[i], p, p.lastChild);
+                            // 最後の単語を消す
+                            p.lastChild.textContent = p.lastChild.textContent.slice(0, words[i].length*-1);
+                            // 一字削除する所がエラーになる！
+//                            p.lastChild.textContent.splice(words[i].length*-1, words[i].length); // 末尾の一字を消す
+//                            p.lastChild.textContent.splice(-1, 1); // 末尾の一字を消す
+                            //p.lastChild.splice(-1, 1); // 末尾の一字を消す
+                            node.textContent = words.slice(i).join(''); // 最後の単語を含むテキストを元のnodeに含める
+                            return [p, node]
                         }
-                        i++;
                     }
                 }
-                */
+                /*
                 el.prepend(node)
                 return [p, el];
+                */
             }
             node = el.firstChild;
         }
