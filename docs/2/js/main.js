@@ -1,0 +1,27 @@
+window.addEventListener('DOMContentLoaded', (event) => {
+    const names = 'manuscript prev next nowPage allPage cover content book'.split(' ');
+    const [manuscript,prev,next,nowPage,allPage,cover,content,book] = names.map(n=>document.querySelector(`[name="${n}"]`));
+    const parser = new JavelParser(manuscript.value);
+    const bk = new Book();
+    manuscript.addEventListener('input', async(e)=>{
+        parser.text = e.target.value;
+        console.log(parser.blocks, parser.coverBlocks, parser.contentBlocks, parser.coverHtmls, parser.contentHtmls, parser.coverEls, parser.contentEls);
+//        cover.innerHTML = parser.coverHtml;
+//        content.innerHTML = parser.contentHtml;
+//        book.innerHTML = bk.make(parser.els);
+        book.append(...bk.make(parser.els));
+    });
+    manuscript.dispatchEvent(new Event('input'));
+    function updatePage() {
+        nowPage.textContent = bk.nowPageNum;
+        allPage.textContent = bk.allPageNum;
+    }
+    next.addEventListener('click', async(e)=>{bk.showNextPage();updatePage();});
+    prev.addEventListener('click', async(e)=>{bk.showPrevPage();updatePage();});
+    updatePage();
+    next.focus();
+});
+window.addEventListener('beforeunload', (event) => {
+    console.log('beforeunload!!');
+});
+
