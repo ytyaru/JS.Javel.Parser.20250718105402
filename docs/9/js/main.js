@@ -42,10 +42,27 @@ window.addEventListener('DOMContentLoaded', (event) => {
         const s = window.getSelection();
         picker.selection = window.getSelection();
         console.log('＜テキスト選択イベント＞')
-        console.log('原稿(ブロック単位):', parser.blocks[picker.blockIndex])
+        //console.log('原稿(ブロック単位):', parser.blocks[picker.blockIndex])
+        const idxs = picker.blockIndexes;
+        const rng = picker.blockInRange;
+        const blks = parser.blocks.slice(idxs[0], idxs[1]+1);
+        console.log('原稿(ブロック単位):', blks);
         console.log(picker.blockInRange);
-        console.log('原稿(選択単位):', parser.blocks[picker.blockIndex].Graphemes.slice(...picker.blockInRange).join(''));
+//        const blks2 = [...blks];
+//        blks2[0] = blks2[0].Graphemes.slice(rng[0]);
+//        blks2[blks2.length-1] = [blks2.length-1].Graphemes.slice(0, rng[1]);
+//        const str = ((idxs[0]===idxs[1]) ? blks[idxs[0]].Graphemes.slice(...rng) : blks2).join('');
+        //const str = ((idxs[0]===idxs[1]) ? blks[0].Graphemes.slice(...rng) : getEndBlock(blks,rng)).join('\n\n');
+        const str = (1===blks.length) ? blks[0].Graphemes.slice(...rng.sort((a,b)=>a-b)).join('') : getEndBlock(blks,rng).join('\n\n');
+        console.log('原稿(選択単位):', str);
+        //console.log('原稿(選択単位):', parser.blocks[picker.blockIndex].Graphemes.slice(...picker.blockInRange).join(''));
     })
+    function getEndBlock(blks,rng) {
+        const blks2 = [...blks];
+        blks2[0] = blks2[0].Graphemes.slice(rng[0]).join('');
+        blks2[blks2.length-1] = blks2[blks2.length-1].Graphemes.slice(0, rng[1]).join('');
+        return blks2;
+    }
     next.focus();
 });
 window.addEventListener('beforeunload', (event) => {

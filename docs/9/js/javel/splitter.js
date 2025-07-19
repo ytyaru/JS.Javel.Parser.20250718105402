@@ -61,7 +61,7 @@ class PageTypeSplitter {//特定のタイプにおけるページ分割者
         }
     }
 //    _within(r) {return this._.size.block < r.bottom}
-    _within(el) {console.log(el);return this._.size.block < el.getBoundingClientRect().bottom}
+    _within(el) {return this._.size.block < el.getBoundingClientRect().bottom}
 }
 class ScrollPage extends PageTypeSplitter {
     constructor(typeId,target=document){super(typeId,target)}

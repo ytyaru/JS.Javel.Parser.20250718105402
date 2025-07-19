@@ -10,18 +10,31 @@ class TextBlockPicker {
     set selection(v) {
         this._.selection = v
     }
-    get blockIndex() {
+    get blockIndexes() {
+        /*
         let b = this._.selection.anchorNode;
         while(3===b.nodeType || (1===b.nodeType && b.parentElement && !b.hasAttribute('data-bi'))) {b=b.parentElement}
         if ('bi' in b.dataset){return Number(b.dataset.bi)}
+        */
+        return 'anchor focus'.split(' ').map(n=>Number(this.#getTextBlockElement(this._.selection[`${n}Node`]).dataset.bi));
     }
     get blockInRange() {
         const s = this._.selection;
         return [this.#getBlockInStartIndex(s.anchorNode, s.anchorOffset),
-                this.#getBlockInStartIndex(s.focusNode, s.focusOffset, true)].sort((a,b)=>a-b);
+                this.#getBlockInStartIndex(s.focusNode, s.focusOffset, true)];
+//        return [this.#getBlockInStartIndex(s.anchorNode, s.anchorOffset),
+//                this.#getBlockInStartIndex(s.focusNode, s.focusOffset, true)].sort((a,b)=>a-b);
+    }
+    #getTextBlockElement(node) {// 直近のテキストブロック要素（p/h{1,6}）
+        if (this._.tagNames.block.some(n=>n===node.tagName)) {return node}
+        else {
+            const p = node.parentElement;
+            return p ? this.#getTextBlockElement(p) : null;
+        }
     }
     // 同一テキストブロック内でしか機能しない！（前後のテキストブロックを跨ぐと機能しない！）
     #getBlockInStartIndex(self, offset, isEnd=false) {//el:s.[anchor|focus]Node.parentElement
+        console.log(self, offset, isEnd);
         let blockInStartIndex = 0;
         const parent = self.parentElement;
 //        const headingTagNames = [...new Array(6)].map((_,i)=>`H${i+1}`);
@@ -74,6 +87,7 @@ class TextBlockPicker {
             }
         }
         else {}
+        console.log(blockInStartIndex)
         return blockInStartIndex;
     }
     #getHeadingLevel(parent) {
