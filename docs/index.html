@@ -21,6 +21,7 @@ const {h1,p,br,ol,li,footer,small,time,a,img} = van.tags
 window.addEventListener('DOMContentLoaded', async(event) => {
     // 最新版ほどitemsの先頭に配置する。旧版ほど末尾。
     const items = [
+        'バグ修正（テキストブロック部分取得（範囲選択時右から左にドラッグして選択するとエラーになっていたのを修正した））',
         'テキストブロック部分取得（ブロック間を跨いでも取得可能）',
         'リファクタリング（テキストブロック部分取得（テキスト範囲選択箇所））',
         '仮実装（テキストブロック部分取得（テキスト範囲選択箇所））',
