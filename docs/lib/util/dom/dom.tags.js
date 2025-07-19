@@ -11,5 +11,4 @@ const tag = (ns, name, ...args) => {
 }
 const handler = ns => ({get: (_, name) => tag.bind(undefined, ns, name)})
 window.Dom = {tags: new Proxy(ns => new Proxy(tag, handler(ns)), handler())};
-console.log(Dom)
 })();
