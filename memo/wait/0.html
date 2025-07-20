@@ -1,0 +1,14 @@
+<script>
+window.addEventListener('DOMContentLoaded', async(event) => {
+    document.querySelector(`[name="btn"]`).addEventListener('click', async(e)=>{
+        alert('押した！');
+//        await wait(5000);
+    });
+    const wait = async (ms) => new Promise(resolve => setTimeout(resolve, ms));
+    await wait(5000);
+    document.body.append('指定時間が経過した！');
+});
+</script>
+<!--<input name="ms" type="number" min="1000" max="10000" step="1000">-->
+<button name="btn">waitしてるけど押せる？　ビジー状態で押せない？</button>
+
