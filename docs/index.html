@@ -21,7 +21,7 @@ const {h1,p,br,ol,li,footer,small,time,a,img} = van.tags
 window.addEventListener('DOMContentLoaded', async(event) => {
     // 最新版ほどitemsの先頭に配置する。旧版ほど末尾。
     const items = [
-        'バグ発見（テキストブロック部分取得（rubyの親文字とTextNodeを跨ぐとselection.anchorNodeがrubyでなくp要素になる））',
+        'バグ修正（テキストブロック部分取得（rubyの親文字とTextNodeを跨いでも正常に取得できる（rubyやemは要素全体取得））。異なるテキストブロックを跨いでも取得できる）',
         'バグ修正（テキストブロック部分取得（範囲選択時右から左にドラッグして選択するとエラーになっていたのを修正した））',
         'テキストブロック部分取得（ブロック間を跨いでも取得可能）',
         'リファクタリング（テキストブロック部分取得（テキスト範囲選択箇所））',

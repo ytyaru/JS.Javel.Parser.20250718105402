@@ -35,6 +35,7 @@ class TextBlockPicker {
 //        return 'anchor focus'.split(' ').map(n=>Number(this.#getTextBlockElement(this._.selection[`${n}Node`]).dataset.bi));
         return this.#getSelectedBlockIdx().sort((a,b)=>a-b);
     }
+    /*
     get blockInRange() {
         const s = this._.selection;
 //        return [this.#getBlockInStartIndex(s.anchorNode, s.anchorOffset),
@@ -51,23 +52,168 @@ class TextBlockPicker {
 //        const ids = {start:(isL2R ? 'anchor' : 'focus'), end:(isL2R ? 'focus' : 'anchor')};
         const [startNode, startOffset] = ['Node','Offset'].map(n=>s[`${startId}${n}`])
         const [endNode, endOffset] = ['Node','Offset'].map(n=>s[`${endId}${n}`])
+        console.log(isL2R, startNode, startOffset, endNode, endOffset);
         const rng = [this.#getBlockInStartIndex(startNode, startOffset),
                      this.#getBlockInStartIndex(endNode, endOffset, true)];
         if (Number.isNaN(rng[1]) || rng[1]<=rng[0]) {rng[1]=rng[0]+1}
         return rng;
     }
+    */
+    get blockInRange() {
+        const s = this._.selection;
+        const blockIndexes = this.#getSelectedBlockIdx();
+//        const anchorStartIndex = this.#getBlockInStartIndexOfNode(s.anchorNode, s.anchorOffset);
+//        const focusStartIndex = this.#getBlockInStartIndexOfNode(s.focusNode, s.focusOffset);
+//        const startIndexes = [this.#getBlockInStartIndexOfNode(s.anchorNode, s.anchorOffset),
+//                              this.#getBlockInStartIndexOfNode(s.focusNode, s.focusOffset, true)]
+//        const startIndexes = [this.#getBlockInStartIndexOfNode(s.anchorNode, s.anchorOffset),
+//                              this.#getBlockInStartIndexOfNode(s.focusNode, s.focusOffset, true)];
+        const startIndexes = [this.#getBlockInStartIndexOfNode(s.anchorNode, s.anchorOffset),
+                              this.#getBlockInStartIndexOfNode(s.focusNode, s.focusOffset)];
+        console.log(blockIndexes, startIndexes);
+        // 後ろから前へ範囲選択していたらスワップする
+        if (blockIndexes[1] < blockIndexes[0]) {// 異なるテキストブロックを跨いでおり、かつ後ろから前へ範囲選択していたら
+            console.log('異TB間SWAP!!!!!!!')
+            return [this.#getBlockInStartIndexOfNode(s.focusNode, s.focusOffset),
+                    this.#getBlockInStartIndexOfNode(s.anchorNode, s.anchorOffset, true)]
+        //} else {return startIndexes}
+        } else if (blockIndexes[0]===blockIndexes[1]) {// 同一テキストブロック内なら
+            if (startIndexes[1] < startIndexes[0]) {// 後ろから前へ範囲選択していたら
+                console.log('同一TB内　SWAP!!!!!!!')
+                return [this.#getBlockInStartIndexOfNode(s.focusNode, s.focusOffset),
+                        this.#getBlockInStartIndexOfNode(s.anchorNode, s.anchorOffset, true)]
+            }
+//            const anchorNodeIdx = blockIndexes[0].;
+//            const focusNodeIdx = ;
+        }
+        return [startIndexes[0], this.#getBlockInStartIndexOfNode(s.focusNode, s.focusOffset, true)];
+        /*
+        if (blockIndexes[1] < blockIndexes[0]) {// 後ろから前へ範囲選択していたらスワップする
+            const tmp = startIndexes[0];
+            startIndexes[0] = startIndexes[1];
+            startIndexes[1] = tmp;
+        }
+        return startIndexes;
+        */
+    }
     #getSelectedNodes() {return 'anchor focus'.split(' ').map(n=>this._.selection[`${n}Node`])}
     #getSelectedOffset() {return 'anchor focus'.split(' ').map(n=>this._.selection[`${n}Offset`])}
     #getSelectedBlockIdx() {return this.#getSelectedNodes().map(n=>Number(this.#getTextBlockElement(n).dataset.bi))}
+    /*
     #isLeftToRight() {//選択を開始した方向は前にあるDOMから後ろにあるDOMか（もし逆なら計算が狂うのでanchorとfocusを逆転させる）
         const s = this._.selection;
         const [a,f] = this.#getSelectedNodes().map(n=>this.#getTextBlockElement(n));
         const [A,F] = this.#getSelectedOffset();
         if (a===f) {return A < F}
         else {
-            const [f,l] = this.#getSelectedBlockIdx();
-            return f < l;
+//            const [f,l] = this.#getSelectedBlockIdx();
+//            return f < l;
+            const blockInStartIndexes = [a,f].map(el=>{
+                if ('bis' in el.dataset) {return Number(el.dataset.bis)} // ruby,em
+                else {
+                    
+                }
+            })
         }
+    }
+    */
+    #isLeftToRight() {//選択を開始した方向は前にあるDOMから後ろにあるDOMか（もし逆なら計算が狂うのでanchorとfocusを逆転させる）
+        const s = this._.selection;
+        s.anchorNode
+        s.focusNode
+    }
+    #getBlockInStartIndexOfNode(node, offset, isEnd=false) {// 指定したノードのテキストブロック内開始位置を取得する
+        console.log(node, offset, node.nodeType, node.parentElement.tagName);
+        if (3===node.nodeType) {// TextNode
+            if ('RT RP'.split(' ').some(n=>n===node.parentElement.tagName)) {//ルビ文字
+                if ('RUBY'===node.parentElement.parentElement.tagName) {
+//                    if ('bis' in node.parentElement.parentElement.dataset) {return Number(node.parentElement.parentElement.dataset.bis) + (isEnd ? Number(node.parentElement.parentElement.dataset.len) : 0);}
+                    if ('bis len'.split(' ').every(n=>n in node.parentElement.parentElement.dataset)) {
+                        return Number(node.parentElement.parentElement.dataset.bis) + (isEnd ? Number(node.parentElement.parentElement.dataset.len) : 0)
+                    }
+                }
+            }
+            if ('RUBY'===node.parentElement.tagName) {//親文字
+//                if ('bis' in node.parentElement.dataset) {return Number(node.parentElement.dataset.bis) + (isEnd ? Number(node.parentElement.dataset.len) : 0)}
+                if ('bis len'.split(' ').every(n=>n in node.parentElement.dataset)) {
+                    return Number(node.parentElement.dataset.bis) + (isEnd ? Number(node.parentElement.dataset.len) : 0)
+                }
+            }
+            else if ('EM'===node.parentElement.tagName) {
+//                if ('bis' in node.parentElement.dataset) {return Number(node.parentElement.dataset.bis) + (isEnd ? Number(node.parentElement.dataset.len) : 0)}
+                if ('bis len'.split(' ').every(n=>n in node.parentElement.dataset)) {
+                    return Number(node.parentElement.dataset.bis) + (isEnd ? Number(node.parentElement.dataset.len) : 0)
+                }
+            }
+//            else if (this._.tagNames.block.some(n=>n===node.parentElement.tagName) {return 0+offset}
+            else if (this._.tagNames.block.some(n=>n===node.parentElement.tagName)) {// p,h1〜6
+                //const childNodes = [...node.parentElement.childNodes].reverse();
+                const childNodes = [...node.parentElement.childNodes];
+                const I = childNodes.findIndex(n=>n===node);
+                if (-1===I) {throw new TypeError(`プログラムエラー。nodeは必ず存在するはず。`)}
+                console.log('I:',I)
+                let startIdx = 0;
+                for (let i=0; i<I; i++) {
+                    console.log(childNodes[i], startIdx)
+                    if (3===childNodes[i].nodeType) {startIdx+=childNodes[i].textContent.Graphemes.length}
+                    if (1===childNodes[i].nodeType) {
+                        if ('RT RP'.split(' ').some(n=>n===childNodes[i].tagName)) {
+                            if ('RUBY'===childNodes[i].parentElement.tagName) {
+                                //if ('bis' in childNodes[i].parentElement.dataset) {startIdx+=Number(childNodes[i].parentElement.dataset.dataset.bis) + (isEnd ? Number(childNodes[i].parentElement.dataset.len) : 0)}
+                                //if ('len' in childNodes[i].parentElement.dataset) {startIdx+=Number(childNodes[i].parentElement.dataset.len)}
+                                if ('bis len'.split(' ').every(n=>n in childNodes[i].parentElement.dataset)) {
+                                    startIdx+=Number(childNodes[i].parentElement.dataset.len)
+                                    //if (isEnd) {startIdx+=Number(childNodes[i].parentElement.dataset.len)}
+                                    //else {startIdx=Number(childNodes[i].parentElement.dataset.bis)}
+                                }
+                            }
+                        }
+                        else if ('RUBY'===childNodes[i].tagName) {//親文字
+                            //if ('bis' in childNodes[i].parentElement.dataset) {startIdx+=Number(childNodes[i].parentElement.dataset.bis) + (isEnd ? Number(childNodes[i].parentElement.dataset.len) : 0)}
+                            //if ('len' in childNodes[i].dataset) {startIdx+=Number(childNodes[i].dataset.len)}
+                            //if ('len' in childNodes[i].dataset) {
+                            if ('bis len'.split(' ').every(n=>n in childNodes[i].dataset)) {
+                                startIdx+=Number(childNodes[i].dataset.len)
+                                //if (isEnd) {startIdx+=Number(childNodes[i].dataset.len)}
+                                //else {startIdx=Number(childNodes[i].dataset.bis)}
+                            }
+                        }
+                        else if ('EM'===childNodes[i].tagName) {
+                            //if ('bis' in childNodes[i].dataset) {startIdx+=Number(childNodes[i].dataset.bis) + (isEnd ? Number(childNodes[i].dataset.len) : 0)}
+                            //if ('len' in childNodes[i].dataset) {startIdx+=Number(childNodes[i].dataset.len)}
+                            //if ('len' in childNodes[i].dataset) {
+                            if ('bis len'.split(' ').every(n=>n in childNodes[i].dataset)) {
+                                startIdx+=Number(childNodes[i].dataset.len)
+                                //if (isEnd) {startIdx+=Number(childNodes[i].dataset.len)}
+                                //else {startIdx=Number(childNodes[i].dataset.bis)}
+                            }
+                        }
+                    }
+                }
+                console.log(startIdx)
+                return startIdx + offset + (this._.tagNames.heading.some(n=>n===node.parentElement.tagName) ? this.#getHeadingLevel(node.parentElement)+1 : 0);
+//                return startIdx + (this._.tagNames.inline.some(v=>v===node.parentElement.tagName) ? 0 : offset);
+//                return startIdx + (this._.tagNames.inline.some(v=>v===node.tagName) ? 0 : offset);
+//                this._.tagNames.inline.
+//                const i = childNodes.findIndex(n=>this._.tagNames.inline.some(v=>v===n));
+            }
+        }
+        throw new TypeError(`プログラムエラー。selection.anchorNode, selection.focusNodeは必ずTextNodeのはずだし、rubyやemはdata-bis属性値を持っているべき。`)
+        /*
+        if (1===node.nodeType) {// Element
+            
+        } else if (3===node.nodeType) {// TextNode
+            if ('RT'===node.parent || 'RP'===node.parent) {
+                if ('RUBY'===node.parentElement.parent) {
+                    if ('bis' in node.parentElement.parent.dataset) {return Number(node.parentElement.parent.dataset.bis)}
+                }
+            }
+            else if ('EM'===node.parent) {
+                if ('bis' in node.parentElement.dataset) {return Number(node.parentElement.dataset.bis)}
+            }
+            else if (this._.tagNames.block.some(n=>n===node.parentElement.tagName) {return 0}
+        }
+        */
     }
     #getTextBlockElement(node) {// 直近のテキストブロック要素（p/h{1,6}）
         if (this._.tagNames.block.some(n=>n===node.tagName)) {return node}
