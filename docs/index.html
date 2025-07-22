@@ -21,7 +21,8 @@ const {h1,p,br,ol,li,footer,small,time,a,img} = van.tags
 window.addEventListener('DOMContentLoaded', async(event) => {
     // 最新版ほどitemsの先頭に配置する。旧版ほど末尾。
     const items = [
-        '遅延ロード実装（await wait(2000)でフリーズ防止。但しサイズ計算中にフォントサイズ等が変更されると計算が狂うので注意）',
+        'PageConfig仮実装（画面サイズ等ページ分割処理に関する変数をまとめたクラス）',
+        '遅延ロード仮実装（await wait(2000)でフリーズ防止。但しサイズ計算中にフォントサイズ等が変更されると計算が狂うので注意）',
         'バグ修正（選択範囲の末尾がパラグラフ末尾から次のパラグラフの前までの間でエラーになる）、リファクタリング（picker.js:#isInlineElDataAttr(node)）',
         'バグ修正（テキストブロック部分取得（rubyの親文字とTextNodeを跨いでも正常に取得できる（rubyやemは要素全体取得））。異なるテキストブロックを跨いでも取得できる）',
         'バグ修正（テキストブロック部分取得（範囲選択時右から左にドラッグして選択するとエラーになっていたのを修正した））',

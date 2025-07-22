@@ -1,11 +1,15 @@
 @charset "utf-8";
-img.icon {
-    width: 1em;
-    height: 1em;
+:root {
+    --column-count: 1;
+    --column-gap: 2em;
+    --writing-mode: horizontal-tb;
+    --text-orientation: mixed;
+    --font-size: 16px;
+    --line-height: 1.7em;
+    --letter-spacing: 0.05em;
 }
-footer {
-    text-align:center;
-}
+img.icon {width:1em; height:1em;}
+footer {text-align:center;}
 body {
     font-size:max(16px, calc(100vw / 45));
     line-height:1.7em;
@@ -13,6 +17,15 @@ body {
     color:#000;
     background-color:#ddd;
     font-family: 'Noto Serif JP', 'Source Han Serif JP', 'Noto Color Emoji', serif; 
+}
+.page {
+    column-count: var(--column-count);
+    column-gap: var(--column-gap);
+    writing-mode: var(--writing-mode);
+    text-orientation: var(--text-orientation);
+    font-size: var(--font-size);
+    line-height: var(--line-height);
+    letter-spacing: var(--letter-spacing);
 }
 h1,h2,h3,h4,h5,h6,th,label,caption,legend,code { font-family: 'Noto Sans JP', 'Source Han Sans JP', 'Noto Color Emoji', sans-serif; }
 em {
