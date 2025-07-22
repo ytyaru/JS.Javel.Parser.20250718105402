@@ -1,4 +1,4 @@
-window.addEventListener('DOMContentLoaded', (event) => {
+window.addEventListener('DOMContentLoaded', async(event) => {
     const names = 'manuscript type prev next nowPage allPage cover content scroll slide novel'.split(' ');
     const [manuscript,type,prev,next,nowPage,allPage,cover,content,scroll,slide,novel] = names.map(n=>document.querySelector(`[name="${n}"]`));
     const parser = new JavelParser(manuscript.value);
@@ -15,7 +15,16 @@ window.addEventListener('DOMContentLoaded', (event) => {
     manuscript.addEventListener('input', async(e)=>{
         parser.text = e.target.value;
         'scroll slide novel'.split(' ').map(n=>document.querySelector(`[name="${n}"]`).style.display='none');
-        pageTypes.instances.map(async(i)=>await i.update(parser.els));
+        pageTypes.instances.map(async(i)=>{
+            console.log('******UPDATE********:', i);
+            await i.update(parser.els)
+        });
+        /*
+        */
+//        await pageTypes.get('slide').update(parser.els);
+//        await pageTypes.get('novel').update(parser.els);
+        //await pageTypes.get('novel').update(parser.els);
+//        pageTypes.instances.map(async(i)=>await i.update(parser.els));
 //        pageTypes.instances.map(i=>i.redom(parser.els));
         picker.sourceBlocks = parser.blocks;
         document.querySelector(`[name="${type.value}"]`).style.display='block';
@@ -57,12 +66,14 @@ window.addEventListener('DOMContentLoaded', (event) => {
         console.log(picker.blockInRange);
         console.log('原稿(選択単位):', picker.selectedBlocks, picker.selectedManuscript);
     })
+    /*
     function getEndBlock(blks,rng) {
         const blks2 = [...blks];
         blks2[0] = blks2[0].Graphemes.slice(rng[0]).join('');
         blks2[blks2.length-1] = blks2[blks2.length-1].Graphemes.slice(0, rng[1]).join('');
         return blks2;
     }
+    */
     window.addEventListener('resize', async(e)=>{
         console.log(e)
         const is = `max:${WindowSize.isMaximized}, min:${WindowSize.isMinimized}, full:${WindowSize.isFullScreen}`;

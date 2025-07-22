@@ -40,17 +40,23 @@ class PageTypeSplitter {//特定のタイプにおけるページ分割者
     async update(els) {//
         if (!Type.isEl(this._.el.target)) {return}
         this._.is.loaded = false;
-        console.log('update!!!!!!!!!!!!!1')
+        console.log('update!!!!!!!!!!!!!:', this.typeId)
         // ダミーを生成する（座標計算に必要）
-        if (!this._.el.dummy) {this._.el.dummy=this._makePageEl(true);document.body.append(this._.el.dummy);}
+        //if (!this._.el.dummy) {this._.el.dummy=this._makePageEl(true);document.body.append(this._.el.dummy);}
+        //if (!this._.el.dummy && !document.querySelector(`.dummy`)) {this._.el.dummy=this._makePageEl(true);document.body.append(this._.el.dummy);}
+//        console.log(this._.el.dummy, document.querySelector(`.dummy`));
+//        if (!Type.isEl(this._.el.dummy)) {this._.el.dummy=this._makePageEl(true);document.body.append(this._.el.dummy);}
+        this.#appendDummyEl();
         const pages = []
 //        fn(pages); // ページに収まるか計算してページ追加する
         this.#removeEls();
         for (let page of this._generatePages(els)) {
-            if (0===pages.length) {page.classList.add('show'); console.log(page);}
+            //if (0===pages.length) {page.classList.add('show'); console.log(page);}
             pages.push(page);
             console.log(page)
             this._.el.target.appendChild(page);
+            //if (0===pages.length && !this._.el.target.querySelector('.show')) {this.showPage(1)}
+            if (1===pages.length) {this.showPage(1)}
             this._.el.dummy.style.display = 'none';
             console.log(this._.on.loading)
             if (Type.isFn(this._.on.loading)){this._.on.loading(page);}
@@ -59,9 +65,10 @@ class PageTypeSplitter {//特定のタイプにおけるページ分割者
             this._.el.dummy.style.display = 'block';
         }
         // ダミーを削除する
-        this._.el.dummy.remove();
-        this._.el.dummy = null;
-        this._setupShow(pages);
+        this.#removeDummyEl()
+//        this._.el.dummy.remove();
+//        this._.el.dummy = null;
+//        this._setupShow(pages);
         this._.is.loaded = true;
         if (Type.isFn(this._.on.loaded)){this._.on.loaded(pages);}
         /*
@@ -72,6 +79,19 @@ class PageTypeSplitter {//特定のタイプにおけるページ分割者
         }
         */
     }
+    #appendDummyEl() {//ダミー要素を追加する（ダミーはページ分割座標計算用要素である）
+        const dummy = document.querySelector(`.dummy-${this.typeId}`);
+        //if (dummy) {this._.el.dummy = dummy; return dummy;}
+        if (dummy) {return dummy;}
+        this._.el.dummy = this._makePageEl(true);
+        document.body.append(this._.el.dummy);
+        return this._.el.dummy
+    }
+    #removeDummyEl() {
+        this._.el.dummy.remove();
+        this._.el.dummy = null;
+        if (document.querySelector(`.dummy-${this.typeId}`)) {throw new TypeError(`プログラムエラー。this._.el.dummyと実際のDOM要素との間で整合性が取れていません。`)}
+    }
     *_generatePages(els){
         const page = this._mkPage();
         page.append(...els);
@@ -81,9 +101,10 @@ class PageTypeSplitter {//特定のタイプにおけるページ分割者
         const page = this._makePageEl();
         if (0 < count) {page.dataset.page = count;}
         while(null!==this._.el.dummy.firstChild){page.appendChild(this._.el.dummy.firstChild)}
+        this._.el.dummy.style.height = `0px`;
         return page;
     }
-    _makePageEl(isDummy=false) {return Dom.tags.div({class:`page${isDummy ? ' dummy' : ''}`})}
+    _makePageEl(isDummy=false) {console.log(isDummy);return Dom.tags.div({class:`page${isDummy ? ' dummy-'+this.typeId : ''}`})}
 
     redom(els) {this.#removeEls(); this.#appendEls(this.make(els));}
     #removeEls() {while(this._.el.target.firstChild) {this._.el.target.firstChild.remove()}}
@@ -91,16 +112,22 @@ class PageTypeSplitter {//特定のタイプにおけるページ分割者
     make(els) {return els}
     _make(fn) {
         // ダミーを生成する（座標計算に必要）
-        if (!this._.el.dummy) {this._.el.dummy=this._makePageEl(true);document.body.append(this._.el.dummy);}
+//        if (!this._.el.dummy && !document.querySelector(`.dummy`)) {this._.el.dummy=this._makePageEl(true);document.body.append(this._.el.dummy);}
+        this.#appendDummyEl();
         const pages = []
         fn(pages); // ページに収まるか計算してページ追加する
         // ダミーを削除する
-        this._.el.dummy.remove();
-        this._.el.dummy = null;
+        this.#removeDummyEl();
+//        this._.el.dummy.remove();
+//        this._.el.dummy = null;
         this._setupShow(pages);
         return pages;
     }
-    _setupShow(pages) {pages[0].classList.add('show');}
+    //_setupShow(pages) {pages[0].classList.add('show');}
+    _setupShow(pages) {
+        this.showPage(1);
+//        pages[0].classList.add('show');
+    }
     get isLoaded() {return this._.is.loaded}
     get onLoading() {return this._.on.loading}
     set onLoading(v) {if (Type.isFn(v)){this._.on.loading=v;}}
@@ -123,21 +150,36 @@ class PageTypeSplitter {//特定のタイプにおけるページ分割者
         const pages = [...this._.el.target.querySelectorAll(`.page`)];
         if (!(Number.isSafeInteger(p) && 0<p && p<=pages.length)) {throw new RangeError(`範囲外です。`)}
         for (let i=0; i<pages.length; i++) {
-            if (p===i) {pages[i].classList.add('show');return;}
+            //if (p===i) {pages[i].classList.add('show');return;}
+            if (p===Number(pages[i].dataset.page)) {pages[i].classList.add('show');console.log('PAGEEEEEEEEEEEEEEEEEEEEEEEEEEE')}
+            else {pages[i].classList.remove('show');}
         }
     }
     //_within(el) {return this._.size.block < el.getBoundingClientRect().bottom}
-    _within(el) {
-        const r = el.getBoundingClientRect();
-        console.log(this._.size.block, r.bottom, (r.bottom - r.top), r);
-        return this._.size.block < r.bottom;
+//    _within(el, dummyRect) {
+    _without(el, dummyRect) {
+//        const r = el.getBoundingClientRect();
+//        console.log(this._.size.block, r.bottom, (r.bottom - r.top), el, r);
+//        return this._.size.block < r.bottom;
 //        return this._.size.block < (r.bottom - r.top);
         //return this._.size.block < (r.bottom - r.y);
+        //console.log(this._.size.block < (r.bottom - dummyRect.top), this._.size.block, (r.bottom - dummyRect.top));
+//        console.log(dummyRect, r, el, el.scrollHeight, el.offsetTop, el.scrollTop, this._.el.dummy.scrollHeight);
+        //return this._.size.block < (r.bottom - dummyRect.top)
+//        return (r.bottom - dummyRect.top) < this._.size.block;
+//        return this._.size.block < r.bottom;
+        //console.log(this._.size.block < (el.offsetTop + el.scrollHeight), this._.size.block , (el.offsetTop + el.scrollHeight), el, el.scrollHeight, el.offsetTop, el.scrollTop, this._.el.dummy.scrollHeight);
+        console.log(this._.size.block < (el.offsetTop + el.scrollHeight), this._.size.block , (el.offsetTop + el.scrollHeight), el, this._.el.dummy.scrollHeight);
+        console.log(el.parentElement, el.parentElement.childNodes.length)
+        console.log([...this._.el.dummy.children].some(c=>c===el), el.offsetTop , el.scrollHeight)
+        //return this._.size.block < (el.offsetTop + el.scrollHeight);
+        return this._.size.block < (el.offsetTop + el.scrollHeight) - this._.el.dummy.offsetTop;
     }
 }
 class ScrollPage extends PageTypeSplitter {
     constructor(typeId,target=document){super(typeId,target)}
     make(els) {return els}
+    async update(els) {this._.el.target.append(...els)}
 }
 class SlidePage extends PageTypeSplitter {
     constructor(typeId,target=document){super(typeId,target)}
@@ -147,7 +189,8 @@ class SlidePage extends PageTypeSplitter {
         let count = 1;
         for (let el of els) {
             this._.el.dummy.append(el);
-            if (this._within(el)) {
+//            if (this._within(el)) {
+            if (this._without(el)) {
                 if (Type.isFn(fn)) {fn(pages, el, count)}
                 pages.push(this._mkPage(count));
                 this._.el.dummy.appendChild(el);
@@ -188,15 +231,33 @@ class SlidePage extends PageTypeSplitter {
         const pages = [];
         let page = null;
         let count = 1;
+        let loop = false;
+//        const dummyRect = this._.el.dummy.getBoundingClientRect();
         for (let el of els) {
             this._.el.dummy.append(el);
-            if (this._within(el)) {
+            //if (this._within(el)) {
+//            if (this._within(el, dummyRect)) {
+            if (this._without(el)) {
+                /*
                 if (Type.isFn(fn)) {fn(pages, el, count)}
                 page = this._mkPage(count);
                 pages.push(page);
                 this._.el.dummy.appendChild(el);
+                console.log(this._.el.dummy.offsetTop, this._.el.dummy.scrollHeight, el.offsetTop + el.scrollHeight);
+                //console.log(this._.el.dummy.offsetHeight);
                 yield page;
                 count++;
+                */
+                do {
+                    if (Type.isFn(fn)) {fn(pages, el, count); loop=true;}
+                    page = this._mkPage(count);
+                    pages.push(page);
+                    this._.el.dummy.appendChild(el);
+                    console.log(this._.el.dummy.offsetTop, this._.el.dummy.scrollHeight, el.offsetTop + el.scrollHeight);
+                    //console.log(this._.el.dummy.offsetHeight);
+                    yield page;
+                    count++;
+                } while (loop && this._without(el));
             }
         }
         page = this._mkPage(count);
@@ -212,20 +273,33 @@ class NovelPage extends SlidePage {
         const p = Dom.tags.p(); // ギリギリdummyに入るp内子要素だけを入れる
         p.dataset.bi = el.dataset.bi;
         this._.el.dummy.appendChild(p);
-        console.log(this._.el.dummy.getBoundingClientRect());
-        if (this._within(p)) {return null}
+
+//        const dummyRect = this._.el.dummy.getBoundingClientRect();
+//        console.log('dummy:',dummyRect);
+        //if (this._within(p)) {return null}
+        //if (this._within(p ,dummyRect)) {this._.el.dummy.remove(p);return null;}
+        //if (this._without(p ,dummyRect)) {this._.el.dummy.remove(p);return null;}
+        if (this._without(p)) {p.remove();return null;}
         let node = el.firstChild;
         while (node) {
+            console.log('*****************************************************:', node.textContent)
             p.append(node);
-            if (this._within(p)) {
+//            if (this._within(p)) {
+//            if (this._within(p ,dummyRect)) {
+            if (this._without(p)) {
                 if (node.TEXT_NODE===node.nodeType) {//テキストノードなら単語単位で分割する
                     el.prepend(node); // p要素から離脱し元に戻す
                     let i = 0;
-                    const words = node.textContent.Words;
+                    //const words = node.textContent.Words;
+//                    const words = node.textContent.Graphemes;
+                    const words = node.textContent.Words.map(w=>50 < w.length ? w.Graphemes : w).flat();
                     p.append('');
+                    console.log('*****************************************************:', words)
                     for (let i=0; i<words.length; i++) {
                         p.lastChild.textContent += words[i];
-                        if (this._within(p)) {
+//                        if (this._within(p)) {
+                        //if (this._within(p ,dummyRect)) {
+                        if (this._without(p)) {
                             p.lastChild.textContent = p.lastChild.textContent.slice(0, words[i].length*-1);// 最後の単語を消す
                             node.textContent = words.slice(i).join(''); // 最後の単語を含むテキストを元のnodeに含める
                             return [p, node]
