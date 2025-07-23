@@ -1,0 +1,51 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title></title>
+<meta name="description" content="">
+<meta name="author" content="ytyaru">
+<link rel="license" href="https://creativecommons.org/licenses/by-sa/4.0/deed.ja">
+<link rel="icon" href="../asset/image/author/ytyaru.png">
+<link rel="stylesheet" href="css/style.css">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="../../../../lib/van/1.5.3/nomodule/min.js"></script>
+
+<!--<script src="../js/footer.js"></script>-->
+<script src="../../../../lib/util/type.js"></script>
+<script src="../../../../lib/util/test/assertion.js"></script>
+<script src="../../../../lib/util/string/trim.js"></script>
+<script src="../../../../lib/util/string/case.js"></script>
+<script src="../../../../lib/util/dom/dom.tags.js"></script>
+<script src="../../../../lib/util/string/length.js"></script>
+<script src="../../../../lib/util/promise/wait.js"></script>
+<!--
+<script src="js/javel/parser.js"></script>
+<script src="js/javel/splitter.js"></script>
+<script src="js/javel/picker.js"></script>
+<script src="js/javel/page-config.js"></script>
+-->
+<!--<script src="js/javel/window-size.js"></script>-->
+<!--<script src="js/main.js"></script>-->
+<script src="page-config.js"></script>
+<script src="main.js"></script>
+</head>
+<body>
+    <main>
+        <select name="pageConfigs"></select>
+        <input name="name" value="{writingMode}{width}x{height}_{lineOfChars}">
+        <select name="writingMode">
+            <option value="horizontal-tb">horizontal-tb</option>
+            <option value="vertical-rl">vertical-rl</option>
+        </select>
+        <input name="width" type="number" min="320" max="9999" value="640">x<input name="height" type="number" min="320" max="9999" value="480">
+        <input name="lineOfChars" type="number" min="25" max="50" value="40">字／行
+        <input name="fontSize" type="number" min="12" max="64" value="16">px
+        <input name="letterSpacing" type="number" min="0" max="0.5" value="0.05" step="0.01">em
+        <input name="lineHeight" type="number" min="1" max="2" value="1.7" step="0.05">em
+    </main>
+    <footer></footer>
+</body>
+</html>
+<!-- https://coliss.com/articles/build-websites/operation/work/html-template-for-web-apps-or-sites.html -->
+<!-- https://coliss.com/articles/build-websites/operation/work/html5-template-for-2018.html -->

@@ -2,7 +2,8 @@
 :root {
     --page-inline-size: 640px;
     --page-block-size: 480px;
-    --column-count: 1;
+    --column-width: 1;
+    --column-count: auto;
     --column-gap: 2em;
     --writing-mode: horizontal-tb;
     --text-orientation: mixed;
@@ -63,8 +64,11 @@ em {
     */
     inline-size: var(--page-inline-size);
     block-size: var(--page-block-size);
+    column-width: var(--column-width);
     column-count: var(--column-count);
     column-gap: var(--column-gap);
+    /*
+    */
     writing-mode: var(--writing-mode);
     text-orientation: var(--text-orientation);
     font-size: var(--font-size);
