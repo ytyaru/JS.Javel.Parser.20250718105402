@@ -1,0 +1,54 @@
+<head>
+<script>
+window.addEventListener('DOMContentLoaded', async(event) => {
+    // ボタン処理
+    for (let btn of document.querySelectorAll('button')) {
+        btn.addEventListener('click', async(e)=>{
+            console.log('screen:', screen.width, screen.height);
+            console.log('avail:', screen.availWidth, screen.availHeight);
+            console.log('outer:', window.outerWidth, window.outerHeight);
+            console.log('inner:', window.innerWidth, window.innerHeight);
+            console.log('client:', document.body.clientWidth, document.documentElement.clientHeight);
+            window.open('a.html', 'window-name', makeParams(btn.getAttribute('name')))
+        });
+    }
+    function openWin(url='', name='window-name', params=undefined) {
+        window.open(url, name, params);
+    }
+    function makeParams(type) {
+        const params = {left:0, top:0, width:0, height:0, resizable:'no', location:'no',
+            toString(){return Object.keys(this).filter(v=>v!=='toString').map(k=>`${k}=${this[k]}`).join(',')}
+        };
+        if ('fullest'===type) {
+            params.fullscreen = 'yes';
+            params.width = screen.width;
+            params.height = screen.height;
+        } else if ('halfH'===type) {
+            params.width = screen.availWidth / 2;
+            params.height = screen.availHeight;
+        } else if ('halfV'===type) {
+            params.width = screen.availWidth;
+            params.height = screen.availHeight / 2;
+        } else if ('half'===type) {
+            params.width = screen.availWidth / 2;
+            params.height = screen.availHeight / 2;
+        } else  {//maximize
+            params.width = screen.availWidth;
+            params.height = screen.availHeight;
+        }
+        const P = params.toString()
+        console.log(P);
+        return P;
+    }
+});
+</script>
+</head>
+<body>
+<p name="result"></p>
+<button name="fullest">全画面化</button>
+<button name="maximize">最大化</button>
+<button name="minimize">最小化</button>
+<button name="halfH">横半分化</button>
+<button name="halfV">縦半分化</button>
+<button name="half">半分化</button>
+</body>

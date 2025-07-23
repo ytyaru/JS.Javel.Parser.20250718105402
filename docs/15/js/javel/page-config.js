@@ -1,0 +1,228 @@
+(function(){// Manuscript > TextBlock > HTML > Element
+class PageConfig {
+    constructor() {
+        this._ = {
+            size:{inline:0, block:0, width:0, height:0}, 
+            aspectRatio:{inline:0, block:0}, 
+            orientation:'portrait/landscape',
+            column: {count:{min:1, max:2}, gap:{min:0, max:2}},
+            writingMode: 'vertical-rl',
+            textOrientation: 'upright',
+            // 文庫本のサイズ8〜10pt(10.67〜13.34px)が一般的で学習用なら10.5〜14pt(14〜18.67px)
+            lineOfChars: { // 一行あたりの字数(25〜50の間で調整可能。32〜40がお勧め)
+                range: {min:25, max:50},   // 最小〜最大
+                suggest: {min:32, max:40}, // 日本語が読みやすい数
+            },
+            pageOfLines: {suggest: {min:15, max:20}},        // ページあたりの行数
+            pageOfChars: {suggest: {min:480, max:600}},      // ページあたりの字数
+            bookOfPages: {suggest: {min:150, max:300}},      // 文庫本一冊あたりのページ数（134〜261）
+            bookOfChars: {suggest: {min:80000, max:125000}}, // 文庫本一冊あたりの字数
+            //font: {size:{min:16, max:32}, spacing:0.05, height:1.7},
+            font: {size:{min:16, max:32}, spacing:{min:0, max:0.05}, height:{range:{min:1, max:1.75},suggest:{min:1.5,max:1.7}}},
+            pageOfColumn: {
+                size:{inline:0, block:0},
+                lineOfChars:0,
+                font: {size:16, spacing:0, height:1},
+                column: {count:1, gap:2},
+            },
+            target: {
+                p: {
+                    font: {
+                        family: `'Noto Serif JP', 'Source Han Serif JP', 'Noto Color Emoji', serif`,
+                        size: 16,
+                        lineHeight: 1.7,
+                        letterSpacing: 0.05,
+                    }
+                },
+                h1: {
+                    font: {
+                        family: `'Noto Sans JP', 'Source Han Sans JP', 'Noto Color Emoji', sans-serif`,
+                    }
+                },
+                em: {
+                    font: {style: 'normal'}, /* 非イタリック化 */
+                    textEmphasis: `${this.textEmphasisStyle} ${this.textEmphasisColor}`,
+                    webkit: {textEmphasis: `${this.textEmphasisStyle} ${this.textEmphasisColor}`},
+                }
+            },
+        }
+        this.#calcSize();
+        console.log(this._);
+    }
+    #calcSize() {
+//        this._.target.page.column.count = this.#getColumnCount();
+        const [W,H] = [document.body.clientWidth, document.documentElement.clientHeight];
+        this._.size.width = W;
+        this._.size.height = H;
+        this._.orientation = W < H ? 'portrait' : 'landscape';
+        this._.size.inline = this.isVertical ? H : W;
+        this._.size.block = this.isVertical ? W : H;
+        this.#setAspectRatio();
+
+        this.#setColumn();
+        // 一ページにある一カラムあたりのインライン長
+        this._.pageOfColumn.size.inline = (this._.size.inline / this._.pageOfColumn.count) - (this._.pageOfColumn.font.size * this._.pageOfColumn.column.gap);
+        this._.pageOfColumn.size.block = this._.size.block;
+
+        // 字間と行間
+        // 537.6(32字*16.8px)px以上なら字間を0.05emにする
+        //this._.target.p.letterSpacing = this._.font.spacing[((this._.font.size.min * (this._.lineOfChars.suggest.min * (1+this._.font.spacing.max))) < this._.size.inline) ? 'max' : 'min'];
+//        this._.target.p.letterSpacing = this._.font.spacing[((this._.font.size.min * (this._.lineOfChars.suggest.min * (1+this._.font.spacing.max))) < this._.pageOfColumn.size.inline) ? 'max' : 'min'];
+        // 360(15行*(16*1.5))px以上なら行間を1.5emにする
+//        this._.target.p.lineHeight = (0 < this._.target.p.letterSpacing && this._.size.block < (this._.pageOfLines.suggest.min * this._.font.size.min * this._.font.height.suggest.min));
+//        this._.target.p.lineHeight = this.#getLineHeight();
+        this._.pageOfColumn.font.spacing = this._.font.spacing[((this._.font.size.min * (this._.lineOfChars.suggest.min * (1+this._.font.spacing.max))) < this._.pageOfColumn.size.inline) ? 'max' : 'min'];
+        this._.pageOfColumn.font.height = this.#getLineHeight();
+
+        // 字
+        this.#setLineOfChars(); // 40〜25字／行
+        this._.pageOfColumn.font.size = this._.pageOfColumn.size.inline / (this._.pageOfColumn.lineOfChars + (this._.pageOfColumn.font.spacing * this._.pageOfColumn.lineOfChars));
+        // 50字を超過するなら(16px/字)
+//        this._.lineOfChars.range.max < (this._.pageOfColumn.size.inline / (this._.font.size.min * this._.lineOfChars.range.max))
+//        this._.lineOfChars.range.max < (this._.pageOfColumn.size.inline / (this._.font.size.min * this._.lineOfChars.suggest.max))
+        // 
+        // 字 40〜25字以内(16px/字)に収まるならそうする。収まらないほど小さいなら25字とし、収まらないほど大きいなら40字とする。
+//        this.#setLineOfChars();
+        //((fontSize * (1+spacing)) * loc) = inlineSize
+        // ((fontSize * (1+spacing)) * loc)/inlineSize = 1;
+        // (1.05*loc*S)/inlineSize = 1
+        /*
+        // 32字を超過するなら(16px/字)一行あたりの字数を増やす（最大40字まで）
+        if (this._.lineOfChars.suggest.min < (this._.pageOfColumn.size.inline / (this._.font.size.min * this._.lineOfChars.suggest.max))) {
+            for (loc of [...new Array(8)]).map((_,i)=>i+1+this._.lineOfChars.suggest.min)) {
+                if (loc < (this._.pageOfColumn.size.inline / (this._.font.size.min * this._.lineOfChars.suggest.max))) {
+                    this._.pageOfColumn.lineOfChars = loc-1;
+                }
+            }
+            this._.lineOfChars.suggest.min
+        }
+        // 40字を超過するなら(16px/字)40字に収まるようフォントサイズを大きくする
+        if (this._.lineOfChars.suggest.max < (this._.pageOfColumn.size.inline / (this._.font.size.min * this._.lineOfChars.suggest.max))) {
+            this._.pageOfColumn.lineOfChars = this._.lineOfChars.suggest.max;
+            this._.pageOfColumn.font.size = (this._.pageOfColumn.size.inline / this._.lineOfChars.suggest.max);
+        }
+        */
+
+        this.#setCss();
+    }
+    #setCss() {
+        const S = document.documentElement.style;
+        const s = S.setProperty.bind(S);
+//        const s = getComputedStyle(document.querySelector(':root'));
+        s('--page-inline-size', this._.pageOfColumn.size.inline + 'px');
+        s('--page-block-size', this._.pageOfColumn.size.block + 'px');
+        s('--column-count', this._.pageOfColumn.column.count);
+        s('--column-gap', this._.pageOfColumn.column.gap + 'em');
+        s('--writing-mode', this.writingMode);
+        s('--text-orientation', this.textOrientation);
+        s('--font-size', this._.pageOfColumn.font.size + 'px');
+        s('--line-height', this._.pageOfColumn.font.height + 'em');
+        s('--letter-spacing', this._.pageOfColumn.font.spacing + 'em');
+
+        /*
+        s.setProperty('--page-inline-size', this._.pageOfColumn.size.inline + 'px');
+        s.setProperty('--page-block-size', this._.pageOfColumn.size.block + 'px');
+        s.setProperty('--column-count', this._.pageOfColumn.column.count);
+        s.setProperty('--column-gap', this._.pageOfColumn.column.gap + 'em');
+        s.setProperty('--writing-mode', this.writingMode);
+        s.setProperty('--text-orientation', this.textOrientation);
+        s.setProperty('--font-size', this._.pageOfColumn.font.size + 'px');
+        s.setProperty('--line-height', this._.pageOfColumn.font.height + 'em');
+        s.setProperty('--letter-spacing', this._.pageOfColumn.font.spacing + 'em');
+        */
+        /*
+        --writing-mode: horizontal-tb;
+        --text-orientation: mixed;
+        --font-size: 16px;
+        --line-height: 1.7em;
+        --letter-spacing: 0.05em;
+        */
+    }
+    #setAspectRatio() {
+        const gcd = (a, b) => b === 0 ? a : gcd(b, a % b);
+        const commonDivisor = gcd(this._.size.inline, this._.size.block);
+        this._.aspectRatio.inline = this._.size.inline / commonDivisor;
+        this._.aspectRatio.block = this._.size.block / commonDivisor;
+    }
+    #getLineHeight() {
+        // 544px(20行*(16px*1.7em))より大きいなら行間を1.7emにする
+        // 360px(15行*(16px*1.5em))より大きいなら行間を1.5emにする
+        // 上記以下なら行間を1emにする
+        const thresholds = 'max min'.split(' ').map(n=>[this._.pageOfLines.suggest[n] * this._.font.size.min * this._.font.height.suggest[n], this._.font.height.suggest[n]]);
+        //for (let [sb, lh] of thresholds) {if (this._.size.block < sb) {return lh}}
+        for (let [sb, lh] of thresholds) {if (this._.pageOfColumn.size.block < sb) {return lh}}
+        return this._.font.height.range.min;
+    }
+    #setColumn() {// 一ページあたりの列数と隙間
+        this._.pageOfColumn.count = this.#getColumnCount();
+        this._.pageOfColumn.gap = (this._.pageOfColumn.count-1) * this._.column.gap.max;
+    }
+    #getColumnCount() {//32字*(16px+0.05em)*2列) + column-gap(2字分)超過なら2列にする。それ以外は1列。
+        const charPx = (this._.font.size.min * (1+this._.font.spacing.max));
+        const columnCount = 2;
+        const columnGap = charPx * 2;
+        const sz = (this._.lineOfChars.suggest.min * charPx * columnCount) + columnGap;
+        return sz < (this.isHorizontal ? this._.size.inline : this._.size.block) ? 2 : 1;
+    }
+    #setLineOfChars() {
+        /*
+        const oloc = this.#getOverLineOfChars();
+        if (oloc < this._.lineOfChars.suggest.max+1) {this._.pageOfColumn.lineOfChars = oloc-1;}
+        else {this._.pageOfColumn.lineOfChars = this._.pageOfColumn.size.inline < (this._.lineOfChars.range.min * this._.font.size.min) ? this._.lineOfChars.range.min : this._.lineOfChars.suggest.max;}
+        //else {this._.pageOfColumn.lineOfChars = this._.lineOfChars.suggest.max;}
+        */
+        const safeLoc = this.#getSafeLineOfChars();
+        //this._.pageOfColumn.lineOfChars = safeLoc ?? this._.lineOfChars.range.min;
+        this._.pageOfColumn.lineOfChars = safeLoc ?? (this._.pageOfColumn.size.inline < (this._.lineOfChars.range.min * this._.font.size.min) ? this._.lineOfChars.range.min : this._.lineOfChars.suggest.max);
+
+    }
+    #getSafeLineOfChars() {
+    //#getOverLineOfChars() {
+        // 40〜32字に収まるなら返す(16px/字)
+        for (let loc of [...new Array(this._.lineOfChars.suggest.max - this._.lineOfChars.range.min)].map((_,i)=>this._.lineOfChars.suggest.max-i)) {
+            //console.log(this._.pageOfColumn.size.inline, ((this._.font.size.min * (1+this._.font.spacing)) * loc));
+            //console.log(this._.pageOfColumn.size.inline, ((this._.pageOfColumn.font.size.min * (1+this._.pageOfColumn.font.spacing)) * loc));
+            //console.log(this._.pageOfColumn.size.inline, this._.pageOfColumn.font.size.min, this._.pageOfColumn.font.spacing, loc);
+            //console.log(this._.pageOfColumn.size.inline, this._.font.size.min, this._.pageOfColumn.font.spacing, loc);
+            console.log(this._.pageOfColumn.size.inline, ((this._.font.size.min * (1+this._.pageOfColumn.font.spacing)) * loc));
+            //if (this._.pageOfColumn.size.inline < ((this._.font.size.min * (1+this._.font.spacing)) * loc)) {return loc}
+            //if (this._.pageOfColumn.size.inline < ((this._.font.size.min * (1+this._.pageOfColumn.font.spacing)) * loc)) {return loc}
+            if (this._.pageOfColumn.size.inline < ((this._.font.size.min * (1+this._.pageOfColumn.font.spacing)) * loc)) {continue}
+            return loc;
+        }
+        return null;
+        //return this._.lineOfChars.suggest.min;
+    }
+    get isPortrait() {return 'portrait'===this._.orientation}
+    get isLandscape() {return 'landscape'===this._.orientation}
+    get writingMode() {return this._.writingMode}
+    set writingMode(v) {
+        const V = this.#getValidWritingMode(v);
+        if (V) {
+            this._.writingMode = v;
+            if (this.isHorizontal) {this.textOrientation = 'mixed'}
+            else if (this.isVertical) {this.textOrientation = 'upright'}
+            this.#calcSize();
+        }
+        /*
+        if ('horizontal-tb vertical-rl vertical-lr sideways-rl sideways-lr'.split(' ').some(c=>c===v)) {this._.writingMode = v;}
+        else if ('horizontal-tb'.startsWith(v)) {this._.writingMode = v;}
+        else if ('vertical'.startsWith(v)) {this._.writingMode = 'vertical-rl';}
+        else if ('sideways'.startsWith(v)) {this._.writingMode = 'sideways-rl';}
+        */
+    }
+    #getValidWritingMode(v) {
+        if ('horizontal-tb vertical-rl vertical-lr sideways-rl sideways-lr'.split(' ').some(c=>c===v)) {return v}
+        else if ('horizontal'.startsWith(v.toLowerCase())) {return v.toLowerCase()}
+        else if ('vertical'.startsWith(v.toLowerCase())) {return 'vertical-rl';}
+        else if ('sideways'.startsWith(v.toLowerCase())) {return 'sideways-rl';}
+        else {return null}
+    }
+    get isVertical() {return this._.writingMode.startsWith('vertical')}
+    get isHorizontal() {return this._.writingMode.startsWith('horizontal')}
+    swapWritingMode() {this._.writingMode = this.isHorizontal ? 'vertical-rl' : 'horizontal-tb';}
+    get textOrientation() {return this._.textOrientation}
+    set textOrientation(v) {if ('mixed upright sideways-right sideways use-glyph-orientation'.split(' ').some(c=>c===v)) {this._.textOrientation = v}}
+}
+window.PageConfig = PageConfig;
+})();

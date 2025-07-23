@@ -1,0 +1,83 @@
+<script>
+window.addEventListener('DOMContentLoaded', async(event) => {
+    class ResizeEvent extends Event {// fullest/maximize/minimize/unfit/half[HV]?/third[HV]?
+        static dispatch() {
+            if (window.outerWidth === screen.width && window.outerHeight === screen.height) {
+            //if (document.body.clientWidth === screen.width && document.documentElement.clientHeight === screen.height) {
+                window.dispatchEvent(new ResizeEvent('fullest', undefined));
+            }
+            else if (window.outerWidth === screen.availWidth && window.outerHeight === screen.availHeight) {
+            //if (window.innerWidth === screen.availWidth && window.innerHeight === screen.availHeight) {
+                // ウィンドウが最大化された場合の処理
+    //            console.log('ウィンドウが最大化されました');
+                //window.dispatchEvent('maximize', new CustomEvent())
+                window.dispatchEvent(new ResizeEvent('maximize', undefined));
+            }
+            else {
+                // ウィンドウが最大化されていない場合の処理
+    //            console.log('ウィンドウが最大化されていません');
+                window.dispatchEvent(new ResizeEvent('unmaximize', undefined));
+            }
+        }
+        constructor(type, options) {
+            super(type, options);
+            this._ = {width:0, height:0, size:{inline:0, block:0}};
+        }
+    }
+    window.addEventListener('resize', async(e)=>{
+        console.log(window.outerWidth, window.outerHeight);
+        console.log(document.body.clientWidth, document.documentElement.clientHeight);
+        ResizeEvent.dispatch();
+        /*
+        if (window.outerWidth === screen.width && window.outerHeight === screen.height) {
+        //if (document.body.clientWidth === screen.width && document.documentElement.clientHeight === screen.height) {
+            window.dispatchEvent(new ResizeEvent('fullest', undefined));
+        }
+        else if (window.outerWidth === screen.availWidth && window.outerHeight === screen.availHeight) {
+        //if (window.innerWidth === screen.availWidth && window.innerHeight === screen.availHeight) {
+            // ウィンドウが最大化された場合の処理
+//            console.log('ウィンドウが最大化されました');
+            //window.dispatchEvent('maximize', new CustomEvent())
+            window.dispatchEvent(new ResizeEvent('maximize', undefined));
+        }
+        else {
+            // ウィンドウが最大化されていない場合の処理
+//            console.log('ウィンドウが最大化されていません');
+            window.dispatchEvent(new ResizeEvent('unmaximize', undefined));
+        }
+        */
+    });
+    //document.addEventListener("fullscreenchange", (event) => ResizeEvent.dispatch());
+    document.addEventListener("fullscreenchange", (event) => {
+        console.log('fullscreenchange');
+        ResizeEvent.dispatch()
+    });
+        /*
+    document.addEventListener("fullscreenchange", (event) => {
+        ResizeEvent.dispatch();
+        if (document.fullscreenElement) {
+            // 全画面表示が開始された場合
+            console.log("全画面表示が開始されました");
+        } else {
+            // 全画面表示が終了した場合
+            console.log("全画面表示が終了しました");
+        }
+    });
+        */
+    window.addEventListener('fullest', async(e)=>{
+        document.body.textContent = `ウィンドウが全画面化されました。${window.outerWidth}, ${window.outerHeight}, ${document.body.clientWidth}, ${document.documentElement.clientHeight}`;
+
+        console.log('ウィンドウが全画面化されました。');
+    });
+    window.addEventListener('maximize', async(e)=>{
+        document.body.textContent = `ウィンドウが最大化されました。${window.outerWidth}, ${window.outerHeight}, ${document.body.clientWidth}, ${document.documentElement.clientHeight}`;
+        console.log('ウィンドウが最大化されました。');
+    });
+    window.addEventListener('unmaximize', async(e)=>{
+        document.body.textContent = `ウィンドウは最大化ではありません。${window.outerWidth}, ${window.outerHeight}, ${document.body.clientWidth}, ${document.documentElement.clientHeight}`;
+        console.log('ウィンドウは最大化ではありません。');
+    });
+    window.dispatchEvent(new Event('resize'));
+});
+</script>
+

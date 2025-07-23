@@ -1,0 +1,97 @@
+<head>
+<script>
+// 全画面化／最大化ボタンを触っているうちに不正値を返すようになってしまう。原因不明。
+window.addEventListener('DOMContentLoaded', async(event) => {
+    class ResizeEvent extends Event {// fullest/maximize/minimize/unfit/half[HV]?/third[HV]?
+        static #isAddListen = false;
+        static listen() {
+            if (this.#isAddListen) {return}
+            window.addEventListener('resize', async(e)=>{
+                console.debug('resize');
+                console.debug(window.outerWidth, window.outerHeight);
+                console.debug(document.body.clientWidth, document.documentElement.clientHeight);
+                ResizeEvent.dispatch();
+            });
+            document.addEventListener("fullscreenchange", (event) => {
+                console.debug('fullscreenchange');
+//                ResizeEvent.dispatch();
+            });
+        }
+        static dispatch() {
+            console.debug('dispatch')
+            const sizes = this.#getSizes();
+            console.debug(sizes)
+            for (let k of Object.keys(sizes)) {
+                if (window.outerWidth===sizes[k][0] && window.outerHeight===sizes[k][1]) {return window.dispatchEvent(new ResizeEvent(k))}
+            }
+            return window.dispatchEvent(new ResizeEvent('unmaximize'));
+        }
+        static resize(type) {// window.resizeTo()が動作しない……
+            console.log(type);
+            if ('fullest'===type) {
+                if(!document.fullscreenElement){console.log('全画面化');document.documentElement.requestFullscreen();}else{console.log('全画面解除');document.exitFullscreen()}
+                //if(!document.fullscreenElement){console.log('全画面化');document.documentElement.requestFullscreen();return window.dispatchEvent(new ResizeEvent('fullest'))}else{console.log('全画面解除');document.exitFullscreen()}
+            }
+            //if ('fullest'===type) {if(!document.fullscreenElement){document.documentElement.requestFullscreen();}else{document.exitFullscreen()}}
+            else if ('minimize'===type) {window.blur();}
+            else {window.resizeTo(...this.#getSize(type));}
+            //else {console.log(type, this.#getSize(type));window.resizeTo(...this.#getSize(type));}
+            window.dispatchEvent(new Event(type));
+        }
+        static #getSizes() {return 'fullest maximize halfH halfV half'.split(' ').reduce((o,k)=>{o[k]=this.#getSize(k);return o},{})}
+        static #getSize(type) {
+            switch (type) {
+                case 'maximize': return [window.screen.availWidth, window.screen.availHeight];
+                case 'halfH': return [Math.ceil(window.screen.availWidth / 2), window.screen.availHeight];
+                case 'halfV': return [window.screen.availWidth, Math.ceil(window.screen.availHeight / 2)];
+                case 'half': return [Math.ceil(window.screen.availWidth / 2), Math.ceil(window.screen.availHeight / 2)];
+                default: return [window.screen.width, window.screen.height]
+            }
+        }
+        static isMaximize() {return this.#is('maximize');}
+        static isFullest() {return this.#is('fullest');}
+        static #is(type) {const s=this.#getSize(type);return window.outerWidth===s[0] && window.outerHeight===s[1]}
+        constructor(type, options) {
+            super(type, options);
+            this._ = {width:0, height:0, size:{inline:0, block:0}};
+        }
+    }
+    // 画面状態イベントを聞く
+    ResizeEvent.listen();
+    const result = document.querySelector(`[name="result"]`);
+    window.addEventListener('fullest', async(e)=>{
+        result.textContent = `ウィンドウが全画面化されました。${window.outerWidth}, ${window.outerHeight}, ${document.body.clientWidth}, ${document.documentElement.clientHeight}`;
+
+        console.log('ウィンドウが全画面化されました。');
+    });
+    window.addEventListener('maximize', async(e)=>{
+        result.textContent = `ウィンドウが最大化されました。${window.outerWidth}, ${window.outerHeight}, ${document.body.clientWidth}, ${document.documentElement.clientHeight}`;
+        console.log('ウィンドウが最大化されました。');
+    });
+    window.addEventListener('unmaximize', async(e)=>{
+        result.textContent = `ウィンドウは最大化ではありません。${window.outerWidth}, ${window.outerHeight}, ${document.body.clientWidth}, ${document.documentElement.clientHeight}`;
+        console.log('ウィンドウは最大化ではありません。');
+    });
+    window.dispatchEvent(new Event('resize'));
+
+    // ボタン処理
+    for (let btn of document.querySelectorAll('button')) {
+        btn.addEventListener('click', async(e)=>{
+//            console.log(btn.getAttribute('name'));
+            //ResizeEvent.resize(btn.getAttribute('name'));
+            const type = btn.getAttribute('name');
+            ResizeEvent.resize(type);
+        });
+    }
+});
+</script>
+</head>
+<body>
+<p name="result"></p>
+<button name="fullest">全画面化</button>
+<button name="maximize">最大化</button>
+<button name="minimize">最小化</button>
+<button name="halfH">横半分化</button>
+<button name="halfV">縦半分化</button>
+<button name="half">半分化</button>
+</body>

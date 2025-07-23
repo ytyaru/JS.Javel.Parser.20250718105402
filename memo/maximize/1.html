@@ -1,0 +1,111 @@
+<head>
+<script>
+window.addEventListener('DOMContentLoaded', async(event) => {
+    class ResizeEvent extends Event {// fullest/maximize/minimize/unfit/half[HV]?/third[HV]?
+        static dispatch() {
+            if (window.outerWidth === screen.width && window.outerHeight === screen.height) {//全画面化
+                window.dispatchEvent(new ResizeEvent('fullest', undefined));
+            }
+            else if (window.outerWidth === screen.availWidth && window.outerHeight === screen.availHeight) {//最大化
+                window.dispatchEvent(new ResizeEvent('maximize', undefined));
+            }
+            else {//非全画面化＆非最大化
+                window.dispatchEvent(new ResizeEvent('unmaximize', undefined));
+            }
+        }
+        static resize(type) {
+            console.log(type);
+            if ('fullest'===type) {if(!document.fullscreenElement){document.documentElement.requestFullscreen();}}
+            else if ('minimize'===type) {window.blur();}
+            else {window.resizeTo(...this.#getSize(type));}
+            window.dispatchEvent(new Event('resize'));
+        }
+        static #getSize(type) {
+            switch (type) {
+                case 'maximize': return [window.screen.availWidth, window.screen.availHeight];
+                case 'halfH': return [window.screen.availWidth / 2, window.screen.availHeight];
+                case 'halfV': return [window.screen.availWidth, window.screen.availHeight / 2];
+                case 'half': return [window.screen.availWidth / 2, window.screen.availHeight / 2];
+                default: [window.screen.width, window.screen.height]
+            }
+        }
+        constructor(type, options) {
+            super(type, options);
+            this._ = {width:0, height:0, size:{inline:0, block:0}};
+        }
+    }
+    window.addEventListener('resize', async(e)=>{
+        console.log(window.outerWidth, window.outerHeight);
+        console.log(document.body.clientWidth, document.documentElement.clientHeight);
+        ResizeEvent.dispatch();
+        /*
+        if (window.outerWidth === screen.width && window.outerHeight === screen.height) {
+        //if (document.body.clientWidth === screen.width && document.documentElement.clientHeight === screen.height) {
+            window.dispatchEvent(new ResizeEvent('fullest', undefined));
+        }
+        else if (window.outerWidth === screen.availWidth && window.outerHeight === screen.availHeight) {
+        //if (window.innerWidth === screen.availWidth && window.innerHeight === screen.availHeight) {
+            // ウィンドウが最大化された場合の処理
+//            console.log('ウィンドウが最大化されました');
+            //window.dispatchEvent('maximize', new CustomEvent())
+            window.dispatchEvent(new ResizeEvent('maximize', undefined));
+        }
+        else {
+            // ウィンドウが最大化されていない場合の処理
+//            console.log('ウィンドウが最大化されていません');
+            window.dispatchEvent(new ResizeEvent('unmaximize', undefined));
+        }
+        */
+    });
+    //document.addEventListener("fullscreenchange", (event) => ResizeEvent.dispatch());
+    document.addEventListener("fullscreenchange", (event) => {
+        console.log('fullscreenchange');
+        ResizeEvent.dispatch()
+    });
+        /*
+    document.addEventListener("fullscreenchange", (event) => {
+        ResizeEvent.dispatch();
+        if (document.fullscreenElement) {
+            // 全画面表示が開始された場合
+            console.log("全画面表示が開始されました");
+        } else {
+            // 全画面表示が終了した場合
+            console.log("全画面表示が終了しました");
+        }
+    });
+        */
+
+    const result = document.querySelector(`[name="result"]`);
+    window.addEventListener('fullest', async(e)=>{
+        result.textContent = `ウィンドウが全画面化されました。${window.outerWidth}, ${window.outerHeight}, ${document.body.clientWidth}, ${document.documentElement.clientHeight}`;
+
+        console.log('ウィンドウが全画面化されました。');
+    });
+    window.addEventListener('maximize', async(e)=>{
+        result.textContent = `ウィンドウが最大化されました。${window.outerWidth}, ${window.outerHeight}, ${document.body.clientWidth}, ${document.documentElement.clientHeight}`;
+        console.log('ウィンドウが最大化されました。');
+    });
+    window.addEventListener('unmaximize', async(e)=>{
+        result.textContent = `ウィンドウは最大化ではありません。${window.outerWidth}, ${window.outerHeight}, ${document.body.clientWidth}, ${document.documentElement.clientHeight}`;
+        console.log('ウィンドウは最大化ではありません。');
+    });
+    window.dispatchEvent(new Event('resize'));
+
+    // ボタン処理
+    for (let btn of document.querySelectorAll('button')) {
+        btn.addEventListener('click', async(e)=>{
+            ResizeEvent.resize(btn.getAttribute('name'));
+        });
+    }
+});
+</script>
+</head>
+<body>
+<p name="result"></p>
+<button name="fullest">全画面化</button>
+<button name="maximize">最大化</button>
+<button name="minimize">最小化</button>
+<button name="halfH">横半分化</button>
+<button name="halfV">縦半分化</button>
+<button name="half">半分化</button>
+</body>

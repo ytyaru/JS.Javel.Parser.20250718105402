@@ -21,6 +21,7 @@ const {h1,p,br,ol,li,footer,small,time,a,img} = van.tags
 window.addEventListener('DOMContentLoaded', async(event) => {
     // 最新版ほどitemsの先頭に配置する。旧版ほど末尾。
     const items = [
+        '',
         'PageConfig仮実装（画面サイズ等ページ分割処理に関する変数をまとめたクラス）',
         '遅延ロード仮実装（await wait(2000)でフリーズ防止。但しサイズ計算中にフォントサイズ等が変更されると計算が狂うので注意）',
         'バグ修正（選択範囲の末尾がパラグラフ末尾から次のパラグラフの前までの間でエラーになる）、リファクタリング（picker.js:#isInlineElDataAttr(node)）',
