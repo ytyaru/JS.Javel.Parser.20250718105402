@@ -1,0 +1,139 @@
+<head>
+<meta charset="UTF-8">
+<style>
+@page {
+    size: A4 landscape; /*landscape/portrait  793,1122px(CSSは1in=96pxなのでそれに合わせた)*/
+    margin: 0mm 5mm;
+}
+:root {
+    --font-size: 16px;
+    --letter-spacing: 0.05em;
+    --line-height: 1.5em;
+}
+body {
+    margin:0; padding:0;
+}
+h1,h2,h3,h4,h5,h6,th,label,caption,legend,code { font-family: 'Noto Sans JP', 'Source Han Sans JP', 'Noto Color Emoji', sans-serif; }
+.page *:first-child {margin-block-start:0;}
+.page *:last-child {margin-block-end:0;}
+em {
+    font-style: normal;
+    text-emphasis: var(--em-style) var(--em-color);
+    -webkit-text-emphasis: var(--em-style) var(--em-color);
+}
+.paper {
+    width: 1122px;
+    height: 793px;
+    display: grid; 
+    grid-template-rows: repeat(2, 1fr);
+    grid-template-columns: repeat(4, 1fr);
+    box-sizing: border-box;
+    padding: 0; margin:0;
+}
+.page {
+    writing-mode: vertical-rl;
+    text-orientation: upright;
+    /*
+    border: solid 1px currentColor;
+    box-sizing: border-box;
+    */
+    font-size: var(--font-size);
+    letter-spacing: var(--letter-spacing);
+    line-height: var(--line-height);
+    padding: 0; margin:0;
+    font-feature-settings: "palt"; /*カーニング 字間詰め*/
+}
+/*
+@media print {
+    .paper{break-before:avoid;break-after:avoid;padding: 0; margin:0;}
+    .page{border:none;padding: 0; margin:0;}
+}
+*/
+.reverse {
+    transform: scale(-1, -1);
+}
+</style>
+<script>
+window.addEventListener('DOMContentLoaded', async(e)=>{
+    let OBJ_URL = null;
+    function pt2px(pt) {return pt/72 * 96}//1pt=1/72in, 1in=96px
+    function em2px(em) {return em * pt2px(Number(document.querySelector(`[name="fontSize"]`).value))}//1pt=1/72in, 1in=96px
+    document.querySelector(`[name="fontSize"]`).addEventListener('input', async(e)=>{
+        const S = document.documentElement.style;
+        const s = S.setProperty.bind(S);
+        const px = pt2px(e.target.value); // Math.round(px)
+        console.log(px);
+        s('--font-size', `${px}`);
+        document.querySelector(`[name="fontSizePx"]`).textContent = `${px.toFixed(2)}`;
+
+        console.log(document.querySelector(`.page`));
+        const is = parseFloat(getComputedStyle(document.querySelector(`.page`)).getPropertyValue('inline-size'));
+        const bs = parseFloat(getComputedStyle(document.querySelector(`.page`)).getPropertyValue('block-size'));
+        const sp = em2px(Number(document.querySelector(`[name="letterSpacing"]`).value));
+        console.log(is, bs, px, sp);
+        document.querySelector(`[name="lineOfChars"]`).textContent = `${Math.floor(is / ((px + sp)*1.2))}`;//1.2は適当な係数
+        console.log(is)
+    });
+    document.querySelector(`[name="letterSpacing"]`).addEventListener('input', async(e)=>{
+        const S = document.documentElement.style;
+        const s = S.setProperty.bind(S);
+        s('--letter-spacing', `${e.target.value}em`);
+        console.log(getComputedStyle(document.querySelector(`.page`)).getPropertyValue('--letter-spacing'));
+    });
+    document.querySelector(`[name="lineHeight"]`).addEventListener('input', async(e)=>{
+        const S = document.documentElement.style;
+        const s = S.setProperty.bind(S);
+        s('--line-height', `${e.target.value}em`);
+        console.log(getComputedStyle(document.querySelector(`.page`)).getPropertyValue('--line-height'));
+    });
+
+    function makePaperHtml() {
+        if (OBJ_URL) {removePaperHtml()}
+        const head = document.documentElement.querySelector('head');
+        const paper = document.documentElement.querySelector('body .paper');
+        const blob = new Blob([head.outerHTML + paper.outerHTML], {type:'text/html'});
+        OBJ_URL = URL.createObjectURL(blob);
+        console.log(OBJ_URL);
+        const w = window.open(OBJ_URL);
+//        w.onunload = revokeObjectURL.bind(this);
+    }
+    function removePaperHtml() {URL.revokeObjectURL(OBJ_URL)}
+    document.querySelector(`[name="make"]`).addEventListener('click', async(e)=>{
+        makePaperHtml();
+        /*
+//        console.log(document.documentElement.head);
+//        console.log(document.documentElement.body);
+//        console.log(document.documentElement.querySelector('head'));
+//        console.log(document.documentElement.querySelector('body'));
+//        console.log(document.documentElement.querySelector('body .paper'));
+        const head = document.documentElement.querySelector('head');
+        const paper = document.documentElement.querySelector('body .paper')
+        console.log(head, paper);
+//        const S = document.documentElement.style;
+//        const s = S.setProperty.bind(S);
+        */
+    });
+    document.querySelector(`[name="fontSize"]`).dispatchEvent(new Event('input'));
+    document.querySelector(`[name="fontSize"]`).focus();
+});
+</script>
+</head>
+<body>
+<h1>折本p8 A4</h1>
+<input name="fontSize" type="number" min="8" max="14" step="0.5" value="12">pt(<span name="fontSizePx"></span>px)　<span name="lineOfChars"></span>字/行
+<input name="letterSpacing" type="number" min="0" max="0.2" step="0.01" value="0.05">em(字間)
+<input name="lineHeight" type="number" min="1" max="1.8" step="0.05" value="1.7">em(行間)
+<button name="make">面付けする</button>(押下後に出現した画面で右クリックし『印刷する』)<!--印刷用紙面生成-->
+
+<div class="paper">
+<div class="page reverse">⑦この本文を上下左右逆さまに表示したい。折本8pを作る時に必要となる。</div>
+<div class="page reverse">⑥この本文を上下左右逆さまに表示したい。折本8pを作る時に必要となる。</div>
+<div class="page reverse">⑤この本文を上下左右逆さまに表示したい。折本8pを作る時に必要となる。</div>
+<div class="page reverse">④この本文を上下左右逆さまに表示したい。折本8pを作る時に必要となる。</div>
+<div class="page">⑧ここは逆転させず正常に表示したい。</div>
+<div class="page">①ここは逆転させず正常に表示したい。</div>
+<div class="page">②ここは逆転させず正常に表示したい。</div>
+<div class="page">③ここは逆転させず正常に表示したい。</div>
+</div>
+</body>
+

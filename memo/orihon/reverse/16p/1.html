@@ -1,0 +1,96 @@
+<head>
+<style>
+@page {
+    size: A4 landscape; /*landscape/portrait  1122,1587px(CSSは1in=96px,1in=2.54cm,A3=297mm×420mmmmなのでそれに合わせた)*/
+    margin: 0mm 5mm;
+}
+:root {
+    --font-size: 16px;
+    --letter-spacing: 0.05em;
+    --line-height: 1.5em;
+}
+.paper {
+    width: 1587px;
+    height: 1122px;
+    display: grid; 
+    grid-template-rows: repeat(4, 1fr);
+    grid-template-columns: repeat(4, 1fr);
+}
+.page {
+    writing-mode: vertical-rl;
+    text-orientation: upright;
+    border: solid 1px currentColor;
+    font-size: var(--font-size);
+    letter-spacing: var(--letter-spacing);
+    line-height: var(--line-height);
+    padding: 0; margin:0;
+    font-feature-settings: "palt"; /*カーニング 字間詰め*/
+}
+.reverse {
+    transform: scale(-1, -1);
+}
+</style>
+<script>
+window.addEventListener('DOMContentLoaded', async(e)=>{
+    function pt2px(pt) {return pt/72 * 96}//1pt=1/72in, 1in=96px
+    function em2px(em) {return em * pt2px(Number(document.querySelector(`[name="fontSize"]`).value))}//1pt=1/72in, 1in=96px
+    document.querySelector(`[name="fontSize"]`).addEventListener('input', async(e)=>{
+        const S = document.documentElement.style;
+        const s = S.setProperty.bind(S);
+        const px = pt2px(e.target.value); // Math.round(px)
+        console.log(px);
+        s('--font-size', `${px}`);
+        document.querySelector(`[name="fontSizePx"]`).textContent = `${px.toFixed(2)}`;
+
+        console.log(document.querySelector(`.page`));
+        const is = parseFloat(getComputedStyle(document.querySelector(`.page`)).getPropertyValue('inline-size'));
+        const bs = parseFloat(getComputedStyle(document.querySelector(`.page`)).getPropertyValue('block-size'));
+        const sp = em2px(Number(document.querySelector(`[name="letterSpacing"]`).value));
+        console.log(is, bs, px, sp);
+        //document.querySelector(`[name="lineOfChars"]`).textContent = `${Math.floor(is / (px + sp))}`;
+        document.querySelector(`[name="lineOfChars"]`).textContent = `${Math.floor(is / ((px + sp)*1.2))}`;
+        console.log(is)
+    });
+    document.querySelector(`[name="letterSpacing"]`).addEventListener('input', async(e)=>{
+        const S = document.documentElement.style;
+        const s = S.setProperty.bind(S);
+        s('--letter-spacing', `${e.target.value}em`);
+        console.log(getComputedStyle(document.querySelector(`.page`)).getPropertyValue('--letter-spacing'));
+    });
+    document.querySelector(`[name="lineHeight"]`).addEventListener('input', async(e)=>{
+        const S = document.documentElement.style;
+        const s = S.setProperty.bind(S);
+        s('--line-height', `${e.target.value}em`);
+        console.log(getComputedStyle(document.querySelector(`.page`)).getPropertyValue('--line-height'));
+    });
+    document.querySelector(`[name="fontSize"]`).dispatchEvent(new Event('input'));
+    document.querySelector(`[name="fontSize"]`).focus();
+});
+</script>
+</head>
+<body>
+<h1>折本p16 A3</h1>
+<input name="fontSize" type="number" min="8" max="14" step="0.5" value="12">pt(<span name="fontSizePx"></span>px)　<span name="lineOfChars"></span>字/行
+<input name="letterSpacing" type="number" min="0" max="0.2" step="0.01" value="0.05">em(字間)
+<input name="lineHeight" type="number" min="1" max="1.8" step="0.05" value="1.7">em(行間)
+
+<div class="paper">
+<div class="page reverse">⑬この本文を上下左右逆さまに表示したい。折本8pを作る時に必要となる。</div>
+<div class="page reverse">⑭この本文を上下左右逆さまに表示したい。折本8pを作る時に必要となる。</div>
+<div class="page reverse">⑮この本文を上下左右逆さまに表示したい。折本8pを作る時に必要となる。</div>
+<div class="page reverse">⑯この本文を上下左右逆さまに表示したい。折本8pを作る時に必要となる。</div>
+<div class="page">⑫ここは逆転させず正常に表示したい。</div>
+<div class="page">⑪ここは逆転させず正常に表示したい。</div>
+<div class="page">⑩ここは逆転させず正常に表示したい。</div>
+<div class="page">⑨ここは逆転させず正常に表示したい。</div>
+<div class="page reverse">⑤この本文を上下左右逆さまに表示したい。折本8pを作る時に必要となる。</div>
+<div class="page reverse">⑥この本文を上下左右逆さまに表示したい。折本8pを作る時に必要となる。</div>
+<div class="page reverse">⑦この本文を上下左右逆さまに表示したい。折本8pを作る時に必要となる。</div>
+<div class="page reverse">⑧この本文を上下左右逆さまに表示したい。折本8pを作る時に必要となる。</div>
+<div class="page">④ここは逆転させず正常に表示したい。</div>
+<div class="page">③ここは逆転させず正常に表示したい。</div>
+<div class="page">①ここは逆転させず正常に表示したい。</div>
+<div class="page">②ここは逆転させず正常に表示したい。</div>
+</div>
+</body>
+

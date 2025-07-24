@@ -1,0 +1,51 @@
+<head>
+<style>
+@page {
+    size: A4 landscape; /*landscape/portrait  1122,1587px(CSSは1in=96px,1in=2.54cm,A3=297mm×420mmmmなのでそれに合わせた)*/
+    margin: 0mm 5mm;
+}
+:root {
+    --font-size: 16px;
+    --letter-spacing: 0.05em;
+}
+.paper {
+    width: 1587px;
+    height: 1122px;
+    display: grid; 
+    grid-template-rows: repeat(4, 1fr);
+    grid-template-columns: repeat(4, 1fr);
+}
+.page {
+    writing-mode: vertical-rl;
+    text-orientation: upright;
+    border: solid 1px currentColor;
+    font-size: var(--font-size);
+    letter-spacing: var(--letter-spacing);
+}
+.reverse {
+    transform: scale(-1, -1);
+}
+</style>
+</head>
+<body>
+<h1>折本p16 A3</h1>
+<div class="paper">
+<div class="page reverse">⑬この本文を上下左右逆さまに表示したい。折本8pを作る時に必要となる。</div>
+<div class="page reverse">⑭この本文を上下左右逆さまに表示したい。折本8pを作る時に必要となる。</div>
+<div class="page reverse">⑮この本文を上下左右逆さまに表示したい。折本8pを作る時に必要となる。</div>
+<div class="page reverse">⑯この本文を上下左右逆さまに表示したい。折本8pを作る時に必要となる。</div>
+<div class="page">⑫ここは逆転させず正常に表示したい。</div>
+<div class="page">⑪ここは逆転させず正常に表示したい。</div>
+<div class="page">⑩ここは逆転させず正常に表示したい。</div>
+<div class="page">⑨ここは逆転させず正常に表示したい。</div>
+<div class="page reverse">⑤この本文を上下左右逆さまに表示したい。折本8pを作る時に必要となる。</div>
+<div class="page reverse">⑥この本文を上下左右逆さまに表示したい。折本8pを作る時に必要となる。</div>
+<div class="page reverse">⑦この本文を上下左右逆さまに表示したい。折本8pを作る時に必要となる。</div>
+<div class="page reverse">⑧この本文を上下左右逆さまに表示したい。折本8pを作る時に必要となる。</div>
+<div class="page">④ここは逆転させず正常に表示したい。</div>
+<div class="page">③ここは逆転させず正常に表示したい。</div>
+<div class="page">①ここは逆転させず正常に表示したい。</div>
+<div class="page">②ここは逆転させず正常に表示したい。</div>
+</div>
+</body>
+

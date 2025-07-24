@@ -1,0 +1,32 @@
+<style>
+@page {
+    size: A4 landscape; /*landscape/portrait  793,1122px(CSSは1in=96pxなのでそれに合わせた)*/
+    margin: 0mm 5mm;
+}
+.paper {
+    width: 1122px;
+    height: 793px;
+    display: grid; 
+    grid-template-rows: repeat(2, 1fr);
+    grid-template-columns: repeat(4, 1fr);
+}
+.page {
+    writing-mode: vertical-rl;
+    text-orientation: upright;
+    border: solid 1px currentColor;
+}
+.reverse {
+    transform: scale(-1, -1);
+}
+</style>
+<div class="paper">
+<div class="page reverse">⑦この本文を上下左右逆さまに表示したい。折本8pを作る時に必要となる。</div>
+<div class="page reverse">⑥この本文を上下左右逆さまに表示したい。折本8pを作る時に必要となる。</div>
+<div class="page reverse">⑤この本文を上下左右逆さまに表示したい。折本8pを作る時に必要となる。</div>
+<div class="page reverse">④この本文を上下左右逆さまに表示したい。折本8pを作る時に必要となる。</div>
+<div class="page">⑧ここは逆転させず正常に表示したい。</div>
+<div class="page">①ここは逆転させず正常に表示したい。</div>
+<div class="page">②ここは逆転させず正常に表示したい。</div>
+<div class="page">③ここは逆転させず正常に表示したい。</div>
+</div>
+
