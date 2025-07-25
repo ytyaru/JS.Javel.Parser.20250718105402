@@ -16,10 +16,12 @@
 }
 body {
     margin:0; padding:0;
+    font-family: '源暎こぶり明朝 v6', 'Noto Serif JP', 'Source Han Serif JP', 'Noto Color Emoji', serif;
 }
 h1,h2,h3,h4,h5,h6,th,label,caption,legend,code { font-family: 'Noto Sans JP', 'Source Han Sans JP', 'Noto Color Emoji', sans-serif; }
 .page *:first-child {margin-block-start:0;}
 .page *:last-child {margin-block-end:0;}
+p {font-family: '源暎こぶり明朝 v6', 'Noto Serif JP', 'Source Han Serif JP', 'Noto Color Emoji', serif;}
 em {
     font-style: normal;
     text-emphasis: var(--em-style) var(--em-color);
@@ -40,7 +42,12 @@ em {
 }
 .page {
     width:280.5px; height:396.5px;
+    min-width:280.5px; min-height:396.5px;
     max-width:280.5px; max-height:396.5px;
+    border: solid 1px currentColor;
+    box-sizing: border-box;
+    /*
+    */
     writing-mode: var(--writing-mode);
     text-orientation: var(--text-orientation);
     font-size: var(--font-size);
@@ -51,6 +58,10 @@ em {
 }
 .reverse {
     transform: scale(-1, -1);
+    /*
+    writing-mode: var(--writing-mode);
+    text-orientation: var(--text-orientation);
+    */
 }
 </style>
 <script src="../../../../docs/lib/util/type.js"></script>
@@ -58,11 +69,15 @@ em {
 <script src="../../../../docs/lib/util/string/case.js"></script>
 <script src="../../../../docs/lib/util/string/length.js"></script>
 <script src="../../../../docs/lib/util/dom/dom.tags.js"></script>
+<script src="../../../../docs/lib/util/promise/wait.js"></script>
 <script src="parser.js"></script>
 <script src="splitter.js"></script>
 <script>
+let OBJ_URL = null;
+window.addEventListener('beforeunload', async(e)=>{
+    URL.revokeObjectURL(OBJ_URL)
+});
 window.addEventListener('DOMContentLoaded', async(e)=>{
-    let OBJ_URL = null;
     const parser = new JavelParser(document.querySelector(`[name="manuscript"]`).value);
     const splitter = (new PageTypes()).get('novel');
     console.log(splitter, new PageTypes().ids)
@@ -128,8 +143,26 @@ window.addEventListener('DOMContentLoaded', async(e)=>{
 
     let debounceScriptInputTimer = null;
     document.querySelector(`[name="manuscript"]`).addEventListener('input', async(e)=>{// ページ分割処理
+        document.querySelector(`[name="over8p"]`).style.display='none';
+        const btn = document.querySelector('button[name="make"]');
+        btn.disabled = true;
         clearTimeout(debounceScriptInputTimer);
         debounceScriptInputTimer = setTimeout(async()=>{// 入力後２秒間経っても再びinputイベントが発火しなければ発火させる。
+            let pageNum = 1;
+            for await (let page of splitter.generate(document.querySelector(`.dummy.paper > .page[data-page="1"]`), parser.els, 500)) {
+                console.log(page);
+                if (8 < pageNum) {document.querySelector(`[name="over8p"]`).style.display='inline-block';break}
+                document.querySelector(`.paper > .page[data-page="${pageNum}"]`).innerHTML = page.innerHTML;
+                pageNum++;
+            }
+            console.log(pageNum);
+            for (let i=pageNum; i<9; i++) {
+                document.querySelector(`[data-page="${i}"]`).innerHTML = ''
+            }
+            document.querySelector(`.dummy.paper`).style.display = 'none';
+            btn.disabled = false;
+            /*
+
             splitter.target = document.querySelector(`.page[data-page="1"]`);
             parser.text = e.target.value;
             const pages = splitter.make(parser.els);
@@ -180,7 +213,7 @@ window.addEventListener('DOMContentLoaded', async(e)=>{
             */
         }, 2000);
     });
-
+    document.querySelector(`[name="manuscript"]`).dispatchEvent(new Event('input'));
     document.querySelector(`[name="fontSize"]`).dispatchEvent(new Event('input'));
     document.querySelector(`[name="fontSize"]`).focus();
 });
@@ -193,10 +226,64 @@ window.addEventListener('DOMContentLoaded', async(e)=>{
 <input name="lineHeight" type="number" min="1" max="1.8" step="0.05" value="1.7">em(行間)
 <select name="writingMode"><option value="vertical-rl">縦書き</option><option value="horizontal-tb">横書き</option></select>
 <button name="make">面付けする</button>(押下後に出現した画面で右クリックし『印刷する』)<!--印刷用紙面生成-->
+<span name="over8p" style="font-weight:bold; color:red;">８ページを超過しました！</span>
 <br>
-<textarea name="manuscript" style="width:100%;"># タイトル
+<textarea name="manuscript" style="width:100%;"># Javel
 
-　本文。</textarea>
+　Javelは日本語小説用マークダウン記法です。『Japanese』と『Novel』を掛け合わせた造語です。その記法は至ってシンプル。見出し、パラグラフ、改行、ルビ、強調の五つのみです。
+
+　見出しとパラグラフはブロック要素、ルビや強調はインライン要素です。
+
+　パラグラフは二連続改行で表します。
+　一改行だけならパラグラフ内改行です。
+　いわゆる意味段落と形式段落です。
+
+　インライン要素はテキスト、改行、ルビ、強調の四種類あります。
+　本文。漢字《かんじ》。｜ルビ《るび》。《《強調》》。
+
+　縦書きの時の時に正しく描画されるか確認すべき文字がいくつかあります。長音記号ー、全角ダッシュ––——、罫線─━、全角ハイフン−、マイナス－−、三点リーダー……、「鉤括弧」『二重鉤括弧』、感嘆符！、疑問符？、句読点。、などです。
+
+——その時、神風が吹いた
+
+# 見出し1
+## 見出し2
+### 見出し3
+#### 見出し4
+##### 見出し5
+###### 見出し6
+
+# ページ分割について
+
+　本のように読めます。一文字が一ページ内に収まるよう調整します。スクロールのように文字が見切れることはなく本のように読めます。
+
+　但しページ分割処理には時間がかかります。
+
+　ページ分割の処理は大雑把に言えば次のような流れです。
+
+1. ページに次のブロック要素が収まるか判定する
+2. 収まらない場合、そのブロック要素内にあるインライン要素を一つずつ入れます
+3. インライン要素がテキストノードであり、ページに収まらない場合、単語単位で分割します
+4. 単語単位が50字より多い場合はそれを文字単位で分割します
+
+　テキストノードの分割はJavaScriptの『Intl.Segmenter』における『word』『grapheme』単位で分割します。
+
+# 折本について
+
+　一枚の紙を折ったり切ったりして小さい本にします。
+
+　片面印刷だけでいいため家庭用プリンタで制作できます。
+
+　折本8pは中央をカッターで切り、折れば、本になります。
+
+　表紙と裏表紙をあせて8ページ、除けば6ページです。
+
+　フォントサイズ等によって本に記載できる最大字数は変わりますが、約1500〜2000字程度です。
+
+　8ページ全てに文字を埋めないと正しくページングできません。
+
+　ああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああ。
+
+</textarea>
 
 <div class="paper">
 <div class="page reverse" data-page="7">⑦この本文を上下左右逆さまに表示したい。折本8pを作る時に必要となる。</div>
@@ -209,7 +296,6 @@ window.addEventListener('DOMContentLoaded', async(e)=>{
 <div class="page" data-page="3">③ここは逆転させず正常に表示したい。</div>
 </div>
 
-<!--
 <div class="dummy paper">
 <div class="page reverse" data-page="7"></div>
 <div class="page reverse" data-page="6"></div>
@@ -220,6 +306,7 @@ window.addEventListener('DOMContentLoaded', async(e)=>{
 <div class="page" data-page="2"></div>
 <div class="page" data-page="3"></div>
 </div>
+<!--
 -->
 
 </body>

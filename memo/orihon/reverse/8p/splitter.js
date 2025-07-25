@@ -61,6 +61,27 @@ class PageTypeSplitter {//特定のタイプにおけるページ分割者
         this._.is.loaded = true;
         if (Type.isFn(this._.on.loaded)){this._.on.loaded(pages);}
     }
+    async *generate(dummyEl, els, waitTime=2000) {
+        console.log('generate!!!!!!!!!!!!!:', this.typeId, dummyEl, els, waitTime)
+        this._.is.loaded = false;
+        this._.el.dummy = dummyEl;
+        'inline block'.split(' ').map(n=>this._.size[n]=parseFloat(getComputedStyle(dummyEl).getPropertyValue(`${n}-size`)));
+        const pages = []
+        for (let page of this._generatePages(els)) {
+            pages.push(page);
+            console.log(page)
+//            this._.el.target.appendChild(page);
+//            if (1===pages.length) {this.showPage(1)}
+//            this._.el.dummy.style.display = 'none';
+//            console.log(this._.on.loading)
+            if (Type.isFn(this._.on.loading)){this._.on.loading(page);}
+            yield page;
+            await wait(waitTime); // 2秒間待機する（フリーズ防止）
+//            this._.el.dummy.style.display = 'block';
+        }
+        this._.is.loaded = true;
+        if (Type.isFn(this._.on.loaded)){this._.on.loaded(pages);}
+    }
     #appendDummyEl() {//ダミー要素を追加する（ダミーはページ分割座標計算用要素である）
         const dummy = document.querySelector(`.dummy-${this.typeId}`);
         if (dummy) {return dummy;}
@@ -125,7 +146,26 @@ class PageTypeSplitter {//特定のタイプにおけるページ分割者
             else {pages[i].classList.remove('show');}
         }
     }
-    _without(el, dummyRect) {return this._.size.block < (el.offsetTop + el.scrollHeight) - this._.el.dummy.offsetTop;}
+    //_without(el, dummyRect) {return this._.size.block < (el.offsetTop + el.scrollHeight) - this._.el.dummy.offsetTop;}
+//    _without(el, dummyRect) {console.log(this._.size.block , (el.offsetTop + el.scrollHeight) - this._.el.dummy.offsetTop, el.offsetTop , el.scrollHeight, this._.el.dummy.offsetTop);return this._.size.block < (el.offsetTop + el.scrollHeight) - this._.el.dummy.offsetTop;}
+    _without(el, dummyRect) {
+        const wm = getComputedStyle(document.documentElement).getPropertyValue('--writing-mode').trim();
+        const isV = ('vertical-rl'===wm);
+        console.log('wm:',wm, 'isV:',isV)
+        console.log(this._.el.dummy.offsetWidth, el.getBoundingClientRect())
+        return isV ? (el.getBoundingClientRect().left - this._.el.dummy.offsetWidth < 0) : (this._.size.block < (el.offsetTop + el.scrollHeight) - this._.el.dummy.offsetTop);
+
+        const elBlockSize = isV ? el.offsetTop + el.scrollHeight : el.offsetLeft + el.scrollWidth;
+        const dmBlockStart = isV ? this._.el.dummy.offsetTop : this._.el.dummy.offsetLeft;
+//        const elBlockSize = isV ? el.offsetLeft + el.scrollWidth : el.offsetTop + el.scrollHeight;
+//        const dmBlockStart = isV ? this._.el.dummy.offsetLeft : this._.el.dummy.offsetTop;
+        console.log(this._.size.block < (elBlockSize - dmBlockStart), this._.size.block, (elBlockSize - dmBlockStart), elBlockSize , dmBlockStart);
+        console.log(el.getBoundingClientRect())
+//        return this._.size.block < (elBlockSize - dmBlockStart);
+        return false;
+//        console.log(this._.size.block , (el.offsetTop + el.scrollHeight) - this._.el.dummy.offsetTop, el.offsetTop , el.scrollHeight, this._.el.dummy.offsetTop);
+//        return this._.size.block < (el.offsetTop + el.scrollHeight) - this._.el.dummy.offsetTop;
+    }
 }
 class ScrollPage extends PageTypeSplitter {
     constructor(typeId,target=document){super(typeId,target)}
@@ -178,12 +218,14 @@ class SlidePage extends PageTypeSplitter {
     */
     *_generatePages(els) {yield* this.__generatePages(els)}
     *__generatePages(els, fn){
+        console.log('*__generatePages()', els)
         const pages = [];
         let page = null;
         let count = 1;
         let loop = false;
         for (let el of els) {
             this._.el.dummy.append(el);
+            console.log(el)
             if (this._without(el)) {
                 do {
                     if (Type.isFn(fn)) {fn(pages, el, count); loop=true;}
@@ -191,6 +233,7 @@ class SlidePage extends PageTypeSplitter {
                     pages.push(page);
                     this._.el.dummy.appendChild(el);
 //                    console.log(this._.el.dummy.offsetTop, this._.el.dummy.scrollHeight, el.offsetTop + el.scrollHeight);
+                    console.log(this._.el.dummy, page, el);
                     yield page;
                     count++;
                 } while (loop && this._without(el));
