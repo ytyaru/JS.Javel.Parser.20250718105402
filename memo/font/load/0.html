@@ -1,0 +1,34 @@
+<script>
+window.addEventListener('DOMContentLoaded', async(e)=>{
+async function getLocalFonts() {
+  const fonts = [];
+  if (document.fonts && document.fonts.forEach) {
+    document.fonts.forEach(font => {
+      fonts.push(font.family);
+    });
+    return fonts;
+  } else {
+    // document.fontsがサポートされていない場合
+    console.warn('document.fonts is not supported in this browser.');
+    return [];
+  }
+}
+
+// 使用例
+async function displayFonts() {
+    const fonts = await getLocalFonts();
+    console.log("ローカルフォント一覧:", fonts);
+    // 例えば、フォント一覧をHTMLに表示する場合
+    const fontListDiv = document.getElementById('fontList');
+    if (fontListDiv) {
+        fonts.forEach(font => {
+            const p = document.createElement('p');
+            p.textContent = font;
+            p.style.fontFamily = font;
+            fontListDiv.appendChild(p);
+        });
+    }
+}
+displayFonts();
+});
+</script>
