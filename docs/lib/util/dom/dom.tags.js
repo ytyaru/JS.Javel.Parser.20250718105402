@@ -10,5 +10,9 @@ const tag = (ns, name, ...args) => {
     return dom;
 }
 const handler = ns => ({get: (_, name) => tag.bind(undefined, ns, name)})
-window.Dom = {tags: new Proxy(ns => new Proxy(tag, handler(ns)), handler())};
+window.Dom = {tags: new Proxy(ns => new Proxy(tag, handler(ns)), handler()),
+    q:(...args)=>document.querySelector(...args),
+    qs:(...args)=>document.querySelectorAll(...args),
+    qa:(...args)=>[...document.querySelectorAll(...args)],
+};
 })();
