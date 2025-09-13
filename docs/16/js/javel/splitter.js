@@ -79,7 +79,7 @@ class PageTypeSplitter {//特定のタイプにおけるページ分割者
 
     redom(els) {this.#removeEls(); this.#appendEls(this.make(els));}
     #removeEls() {while(this._.el.target.firstChild) {this._.el.target.firstChild.remove()}}
-    #appendEls(children) {if (Type.isEl(this._.el.target)) {this._.el.target.append(...children)}}
+    #appendEls(children) {console.log(Type.isEl(this._.el.target), children); if (Type.isEl(this._.el.target)) {this._.el.target.append(...children);this.showPage(1);}}
     make(els) {return els}
     _make(fn) {
         this.#appendDummyEl();// ダミーを生成する（座標計算に必要）
