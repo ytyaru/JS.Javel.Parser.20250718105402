@@ -16,9 +16,19 @@ window.addEventListener('DOMContentLoaded', async(event) => {
     });
     view.addEventListener('click', async(e)=>{
         console.log('view input!!');
+        console.log(Dom);
+        console.log(...['width','height'].map(n=>parseInt(Dom.q(`input[name="${n}"]`).value)), Dom.q(`select[name="writingMode"]`).value);
+        pageConfig.calc(...['width','height'].map(n=>parseInt(Dom.q(`input[name="${n}"]`).value)), Dom.q(`select[name="writingMode"]`).value);
+        console.log(Css.get('--page-inline-size'), Css.get('--page-block-size'));
+       // parseInt(Dom.q(`input[name="width"]`).value), parseInt(Dom.q(`input[name="width"]`).value))
         parser.text = manuscript.value;
         pageTypes.get(type.value).target = Dom.q(`[name="viewer"] > [name="${type.value}"]`);
         console.log(pageTypes.get(type.value).target);
+        console.log(['inline', 'block'].map(n=>Css.getFloat(`--page-${n}-size`)));
+//        pageTypes.get(type.value).set = ['inline', 'block'].map(n=>Css.getFloat(`--page-${n}-size`));
+        pageTypes.get(type.value)._.size.inline = Css.getInt(`--page-inline-size`);
+        pageTypes.get(type.value)._.size.block = Css.getInt(`--page-block-size`);
+        console.log(type.value, pageTypes.get(type.value), pageTypes.get(type.value).size);
         pageTypes.get(type.value).redom(parser.els);
     });
     /*
@@ -76,6 +86,11 @@ window.addEventListener('DOMContentLoaded', async(event) => {
         console.log(is);
         WindowSize.log();
         document.querySelector('[name="info"]').value = is+'\n'+WindowSize.gets();
+        const isFitNowWindow = Dom.q(`input[name="isFitNowWindow"]`);
+        if (isFitNowWindow.checked) {
+            Dom.q(`input[name="width"]`).value = document.body.clientWidth;
+            Dom.q(`input[name="height"]`).value = document.documentElement.clientHeight;
+        }
     });
 //    next.focus();
     view.focus();

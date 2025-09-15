@@ -57,10 +57,41 @@ class PageConfig {
             },
         }
         //this.#calc(width ?? document.body.clientWidth, height ?? document.documentElement.clientHeight, (this.#getValidWritingMode(writingMode) ?? 'horizontal-tb'));
-        this.#calc(width ?? document.body.clientWidth, height ?? document.documentElement.clientHeight, (this.#getValidWritingMode(writingMode) ?? 'vertical-rl'));
+        //this.#calc(width ?? document.body.clientWidth, height ?? document.documentElement.clientHeight, (this.#getValidWritingMode(writingMode) ?? 'vertical-rl'));
+        this.calc(width ?? document.body.clientWidth, height ?? document.documentElement.clientHeight, (this.#getValidWritingMode(writingMode) ?? 'vertical-rl'));
         console.log(this._);
     }
-    #calc(width, height, writingMode) {
+    /*
+    set(options) {
+        const W = (Number.isSafeInteger(width) && 0 < width) ? width : document.body.clientWidth;
+        const H = (Number.isSafeInteger(height) && 0 < height) ? height : document.documentElement.clientHeight;
+        this._.size.width = W;
+        this._.size.height = H;
+        this._.orientation = W < H ? 'portrait' : 'landscape';
+        this._.writingMode = this.#getValidWritingMode(options.writingMode) ?? 'horizontal-tb';
+        this._.size.inline = this.isVertical ? H : W;
+        this._.size.block = this.isVertical ? W : H;
+        this.#setAspectRatio();
+        // 一ページにある一カラムあたりのインライン長
+        if (['Count', 'Gap'].map(n=>options.hasOwnProperty(`column${n}`) && Type.isNum(options[`column${n}`]))) {
+            this._.pageOfColumn.count = options.columnCount;
+            this._.pageOfColumn.gap = options.columnGap;
+        } else {this.#setColumn();}
+        this._.pageOfColumn.size.inline = (this._.size.inline / this._.pageOfColumn.count) - (this._.pageOfColumn.font.size * this._.pageOfColumn.column.gap);
+        this._.pageOfColumn.size.block = this._.size.block;
+        // 字間と行間
+        this._.pageOfColumn.font.spacing = this._.font.spacing[((this._.font.size.min * (this._.lineOfChars.suggest.min * (1+this._.font.spacing.max))) < this._.pageOfColumn.size.inline) ? 'max' : 'min'];
+        this._.pageOfColumn.font.height = this.#getLineHeight();
+        // 字
+        this.#setLineOfChars(); // 40〜25字／行
+        this._.pageOfColumn.font.size = this._.pageOfColumn.size.inline / (this._.pageOfColumn.lineOfChars + (this._.pageOfColumn.font.spacing * this._.pageOfColumn.lineOfChars));
+        // column-width
+        this._.pageOfColumn.column.width = 1===this._.pageOfColumn.count ? this._.pageOfColumn.size.inline : (this._.pageOfColumn.size.inline / this._.pageOfColumn.count) - (this._.pageOfColumn.gap * this._.pageOfColumn.font.size);
+        // CSS変数設定
+        this.#setCss();
+    }
+    */
+    calc(width, height, writingMode) {
         const W = (Number.isSafeInteger(width) && 0 < width) ? width : document.body.clientWidth;
         const H = (Number.isSafeInteger(height) && 0 < height) ? height : document.documentElement.clientHeight;
         this._.size.width = W;
@@ -100,6 +131,7 @@ class PageConfig {
         s('--font-size', this._.pageOfColumn.font.size + 'px');
         s('--line-height', this._.pageOfColumn.font.height + 'em');
         s('--letter-spacing', this._.pageOfColumn.font.spacing + 'em');
+//        console.log(Css.get('--page-inline-size'), Css.get('--page-block-size'));
     }
     #setAspectRatio() {
         const gcd = (a, b) => b === 0 ? a : gcd(b, a % b);
@@ -153,7 +185,8 @@ class PageConfig {
             if (this.isHorizontal) {this.textOrientation = 'mixed'}
             else if (this.isVertical) {this.textOrientation = 'upright'}
             //this.#calc();
-            this.#calc(this._.pageOfColumn.size.inline ?? document.body.clientWidth, this._.pageOfColumn.size.block ?? document.documentElement.clientHeight, (this.#getValidWritingMode(this.writingMode) ?? 'horizontal-tb'));
+            //this.#calc(this._.pageOfColumn.size.inline ?? document.body.clientWidth, this._.pageOfColumn.size.block ?? document.documentElement.clientHeight, (this.#getValidWritingMode(this.writingMode) ?? 'horizontal-tb'));
+            this.calc(this._.pageOfColumn.size.inline ?? document.body.clientWidth, this._.pageOfColumn.size.block ?? document.documentElement.clientHeight, (this.#getValidWritingMode(this.writingMode) ?? 'horizontal-tb'));
         }
     }
     #getValidWritingMode(v) {

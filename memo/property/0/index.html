@@ -1,0 +1,13 @@
+<script>
+class A {
+    constructor() {this._name = 'NAME';}
+    get name() {return this._name}
+    set name(v) {this._name = v}
+}
+class B extends A{}
+class C extends B{}
+const c = new C();
+c.name
+c.name = 'NAME-C'
+console.log(c.name);
+</script>

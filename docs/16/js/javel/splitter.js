@@ -23,9 +23,11 @@ class PageTypeSplitter {//特定のタイプにおけるページ分割者
     set target(v) {if (Type.isEl(v)){this._.el.target=v}}
     get size() {return [this._.size.inline, this._.size.block]}
     set size(v) {
+        console.log('**************************:', v)
         if (Array.isArray(v) && 2===v.length && v.every(x=>null!==x && !Number.isNaN(x) && 'number'===x)) {
             this._.size.inline = v[0];
             this._.size.block = v[1];
+            console.log('**************************')
             this.resize();
         }
     }
@@ -192,6 +194,7 @@ class SlidePage extends PageTypeSplitter {
     }
 }
 class NovelPage extends SlidePage {
+    constructor(typeId,target=document){super(typeId,target)}
     make(els) {return this._make((pages)=>this.__make(els, pages, (pages,el,count)=>this._splitParagraph(el)))}
     _splitParagraph(el) {// p要素ならページを跨ぐ（p要素内にある子要素をできるかぎり詰め込む）
         if ('P'!==el.tagName) {return null}
