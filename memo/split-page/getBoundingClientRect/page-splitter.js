@@ -21,7 +21,8 @@ class PageSplitter {
             //if (this.#without(dummy)) {
             if (this._.dummy.without) {
                 this._.dummy.el.removeChild(el);
-                if ('P'===el.tagName) {this.#splitNodes(el);}// もしp要素ならinline要素単位で分割し挿入する
+                //if ('P'===el.tagName) {const p = this.#splitNodes(el); if(p){this.#makePage(el)}}// もしp要素ならinline要素単位で分割し挿入する
+                if ('P'===el.tagName) {const p = this.#splitNodes([...el.childNodes]); if(p){this.#makePage(el)}}// もしp要素ならinline要素単位で分割し挿入する
                 else {this.#makePage(el)}//BlockElement単体(h,p)で画面サイズ超過するのは想定外(ruby,em,br等は全て単体で画面要素内に収まる事)
                 /*
                 if ('P'===el.tagName) {// もしp要素ならinline要素単位で分割し挿入する
@@ -45,29 +46,108 @@ class PageSplitter {
         return this.isVertical ? (r.left < 0) : (this._.size.block < r.bottom);
     }
     */
+    /*
     #splitNodes(p) {// 引数のp要素内にあるnodes(inline要素とtextNode)を順に処理する。収まりきらなかった超過分を返す。
         const nodes = Array.from(p.childNodes);
-        if (nodes.length < 2) {return nodes}
+//        if (nodes.length < 2) {return nodes}
+        const newP = Dom.tags.p();
+        this._.dummy.el.appendChild(newP);
+        if (this._.dummy.without) {this._.dummy.el.removeChild(newP); return p;}
         for (let i=0; i<nodes.length; i++) {
-            this._.dummy.el.appendChild(nodes[i]);
+//            this._.dummy.el.appendChild(nodes[i]);
+            newP.appendChild(nodes[i]);
             if (this._.dummy.without) {
-                this._.dummy.el.removeChild(nodes[i]);
-                this.#makePage(Node.TEXT_NODE===nodes[i].nodeType ? this.#splitTextNode(nodes[i]) : nodes.slice(i));
+                //this._.dummy.el.removeChild(nodes[i]);
+                newP.removeChild(nodes[i]);
+                if (Node.TEXT_NODE===nodes[i].nodeType) {this.#splitLetters(nodes[i])}
+                else {this.#makePage(nodes.slice(i));}//p要素内ElementNode複数で画面サイズ超過するのは想定外(ruby,em,br等は全て単体で画面要素内に収まる事)
+//                this.#makePage(Node.TEXT_NODE===nodes[i].nodeType ? this.#splitTextNode(nodes[i]) : nodes.slice(i));
 //                if (Node.TEXT_NODE===nodes[i].nodeType) {this.#makePage(this.#splitTextNode(nodes[i]));}
 //                else {this.#makePage(nodes.slice(i));}//p要素内ElementNode単体で画面サイズ超過するのは想定外(ruby,em,br等は全て単体で画面要素内に収まる事)
             }
         }
     }
-    #splitTextNode(node) {
+    */
+    #splitNodes(nodes) {
         const p = Dom.tags.p();
         this._.dummy.el.appendChild(p);
-        if (this._.dummy.without) {this._.dummy.el.removeChild(p); return node;}
-        const gs = node.Graphemes;
-        for (let i=0; i<gs.length; i++) {
-            p.appendChild(gs[i]);
+        if (this._.dummy.without) {this._.dummy.el.removeChild(p); return nodes;}
+        let i = 0;
+        for (i=0; i<nodes.length; i++) {
+            p.appendChild(nodes[i]);
             if (this._.dummy.without) {
+                p.removeChild(nodes[i]);
+                if (Node.TEXT_NODE===nodes[i].nodeType) {this.#splitLetters(nodes[i].textContent.Graphemes)}
+                else {this.#makePage(); return this.#splitNodes(nodes.slice(i));}// 再帰する
+                //else {this.#makePage(); break;}// 一旦終了して再帰する
+            }
+        }
+//        if (i<nodes.length) {return this.#splitNodes(nodes.slice(i));}
+    }
+    #splitLetters(letters) {//letters:node.textContent.Graphemes 一文字単位の配列
+        console.log(letters);
+//        const p = Dom.q(`p:last-child`);//this._.dummy.el.lastElement
+        const p = this._.dummy.el.querySelector(`p:last-child`) ?? Dom.tags.p();
+//        if (!this._.dummy.el.querySelector(`p:last-child`)) {}
+//        const p = this._.dummy.el.querySelector(`p:last-child`);
+        console.log(p, this._.dummy.el);
+        for (let i=0; i<letters.length; i++) {
+            p.append(letters[i]);
+            if (this._.dummy.without) {
+                const lastNode = [...p.childNodes].at(-1);
+                lastNode.textContent = lastNode.textContent.slice(0, -1);
+                this.#makePage();
+                this.#splitLetters(letters.slice(i));
+                return;
+                /*
+                if (0===i) {
+                    this.#makePage();
+                    this.#splitLetters(gs.slice(i));
+                    return;
+                } else {
+                    const lastNode = [...p.childNodes].at(-1);
+    //                console.log(lastNode.textContent);
+                    lastNode.textContent = lastNode.textContent.slice(0, -1);
+                    this.#makePage();
+    //                console.log(lastNode.textContent);
+//                    return gs.slice(i);
+                    this.#splitLetters(gs.slice(i));
+                    return;
+                }
+                */
+            }
+        }
+    }
+    #splitTextNode(node) {
+        const p = Dom.q(`p:last-child`);//this._.dummy.el.lastElement
+//        const p = Dom.tags.p();
+//        this._.dummy.el.appendChild(p);
+//        if (this._.dummy.without) {this._.dummy.el.removeChild(p); return node;}
+        const gs = node.textContent.Graphemes;
+        console.log(node, 'Graphemes:',gs);
+        for (let i=0; i<gs.length; i++) {
+            //p.appendChild(gs[i]);
+            p.append(gs[i]);
+            if (this._.dummy.without) {
+                /*
                 if (0===i) {this._.dummy.el.removeChild(p); return node;}
-                else {p.lastElement.textContent = p.lastElement.textContent.slice(-1); return gs.slice(i);}
+//                else {console.log(p, p.lastElementChild);p.lastElementChild.textContent = p.lastElementChild.textContent.slice(-1); return gs.slice(i);}
+                else {
+                    const lastNode = [...p.childNodes].at(-1);
+                    console.log(lastNode.textContent);
+                    lastNode.textContent = lastNode.textContent.slice(0, -1);
+                    console.log(lastNode.textContent);
+                    return gs.slice(i);
+                }
+                */
+
+                if (0===i) {
+//                    this._.dummy.el.removeChild(p);
+//                    return node;
+                    this.#makePage()
+                } else {
+
+                }
             }
         }
     }
@@ -85,10 +165,12 @@ class PageSplitter {
 //        this._.dummy.el.appendChild(((n instanceof Node && Node.TEXT_NODE===n.nodeType) || Type.isStrs(n)) ? Dom.tags.p(n) : n);
     }
     #getChildren(n) {
-        if ((n instanceof Node && Node.TEXT_NODE===n.nodeType) || Type.isStrs(n)) {return [Dom.tags.p(n)]}
+        if (n instanceof Node && Node.TEXT_NODE===n.nodeType) {return [Dom.tags.p(n)]}
+        else if (Type.isStrs(n)) {return [Dom.tags.p(n.join(''))]}
         else if (n instanceof Node) {return [n]}
         else if (Type.isAry(n) && n.every(v=>v instanceof Node)) {return n}
-        else {throw new TypeError(`要素が不正値です。`)}
+        else if (undefined===n || null===n) {return []}
+        else {console.log(n);throw new TypeError(`要素が不正値です。`)}
     }
 
 }
