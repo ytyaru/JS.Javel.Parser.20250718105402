@@ -1,7 +1,7 @@
 @charset "utf-8";
 :root {
-    --page-inline-size: 640px;
-    --page-block-size: 480px;
+    --page-inline-size: 100%;
+    --page-block-size: 100%;
     --column-width: 1;
     --column-count: auto;
     --column-gap: 2em;

@@ -31,21 +31,46 @@ class PageSplitter {
         this._.pages = [];
         this._.dummy.show();
         for (let el of els) {
+            this._.dummy.observe(el);
             console.log(this._.dummy.isIntersecting);
             this._.dummy.el.appendChild(el); // ブロック要素単位（h, p）
             if (!this._.dummy.isIntersecting) {// 範囲外なら
                 this._.dummy.el.removeChild(el);
-                if ('P'===el.tagName) {this.#splitNodes(el);}// もしp要素ならinline要素単位で分割し挿入する
+//                if ('P'===el.tagName) {this.#splitNodes(el);}// もしp要素ならinline要素単位で分割し挿入する
+                if ('P'===el.tagName) {this.#splitNodes(Array.from(el.childNodes));}// もしp要素ならinline要素単位で分割し挿入する
                 else {this.#makePage(el);}// ELEMENT_NODEをdummyの先頭に追記する（この時点で収まりきらないサイズになることは想定外であるため必ず範囲内に収めること）
             }
         }
         this.#makePage();
         this._.dummy.hide();
     }
+    #splitNodes(nodes) {// 引数のp要素内にあるnodes(inline要素とtextNode)を順に処理する。収まりきらなかった超過分nodeを返す。
+//        if (nodes.length < 2) {return nodes}
+        const p = Dom.tags.p();
+        this._.dummy.observe(p);
+        this._.dummy.el.appendChild(p);
+        if (!this._.dummy.isIntersecting) {this._.dummy.el.removeChild(p); this.#makePage(nodes);}
+        for (let i=0; i<nodes.length; i++) {
+            p.appendChild(nodes[i]);
+//            this._.dummy.observe(nodes[i]);
+//            this._.dummy.el.appendChild(nodes[i]);
+            if (!this._.dummy.isIntersecting) {// 範囲外なら
+                //this._.dummy.el.removeChild(nodes[i]);
+                p.removeChild(nodes[i]);
+                if (Node.TEXT_NODE===nodes[i].nodeType) {this.#makePage(this.#splitTextNode(nodes[i]));}
+                else {this.#makePage(nodes[i]);}//ELEMENT_NODEをdummyの先頭に追記する(この時点で収まりきらないサイズになることは想定外であるため必ず範囲内に収めること)
+            }
+        }
+        return []
+    }
+    /*
     #splitNodes(p) {// 引数のp要素内にあるnodes(inline要素とtextNode)を順に処理する。収まりきらなかった超過分nodeを返す。
         const nodes = Array.from(p.childNodes);
         if (nodes.length < 2) {return nodes}
+//        const p = Dom.tags.p();
+//        if (!this._.dummy.isIntersecting) {this._.dummy.el.removeChild(p); this.#makePage(nodes[i]);}
         for (let i=0; i<nodes.length; i++) {
+            this._.dummy.observe(nodes[i]);
             this._.dummy.el.appendChild(nodes[i]);
             if (!this._.dummy.isIntersecting) {// 範囲外なら
                 this._.dummy.el.removeChild(nodes[i]);
@@ -55,8 +80,10 @@ class PageSplitter {
         }
         return []
     }
+    */
     #splitTextNode(node) {// 引数のTextNodeにある字を順に追加する。収まりきらなかった超過分の字を返す。
         const p = Dom.tags.p();
+        this._.dummy.observe(p);
         this._.dummy.el.appendChild(p);
         if (!this._.dummy.isIntersecting) {this._.dummy.el.removeChild(p); return node;}// 範囲外ならnode丸ごと返す
         const gs = node.Graphemes;
@@ -78,6 +105,7 @@ class PageSplitter {
         this._.dummy.el.innerHTML = '';
         if (!(n instanceof Node || Type.isStrs(n))) {return}
         this._.dummy.el.appendChild(((n instanceof Node && Node.TEXT_NODE===n.nodeType) || Type.isStrs(n)) ? Dom.tags.p(n) : n);
+        this._.dummy.observe(this._.dummy.el.lastChild);
 //        if ((n instanceof Node && Node.TEXT_NODE===n.nodeType) || Type.isStrs(n)) {this._.dummy.el.appendChild(Dom.tags.p(n))}
 //        if (n instanceof Node && Node.ELEMENT_NODE===n.nodeType) {this._.dummy.el.appendChild(n)}
     }
@@ -97,6 +125,7 @@ class DummyPage {
         this._.observer = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
                 this._.isIntersecting = entry.isIntersecting;
+                console.log(entry);
                 /*
                 if (entry.isIntersecting) {
                     console.log('要素が画面内に入りました');
@@ -105,13 +134,21 @@ class DummyPage {
                 }
                 */
             });
-        }, {threshold:1.0});
-        this._.observer.observe(this._.el);
+//        }, {threshold:1.0});
+        }, {root:this._.el, threshold:1.0});
+//        this._.observer.observe(this._.el);
     }
+    observe(el) {// 引数elがdummypage内にあるか判定する
+//        if (!Type.isEl(el)) {throw new TypeError(`引数elはHTML要素であるべきです。`)}
+        this._.observer.disconnect();
+        this._.observer.observe(el);
+    }
+    /*
     #reset() {
         this._.observer.disconnect();
         this._.observer.observe(this._.el);
     }
+    */
 }
 /*
 class PageSplitter {
