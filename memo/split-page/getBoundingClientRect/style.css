@@ -11,15 +11,6 @@
     --line-height: 1.7em;
     --letter-spacing: 0.05em;
 }
-/*
-:root {
-    --line-of-chars:45;
-    --em-style: sesame;
-    --em-color: currentColor;
-    --page-inline-size: 640px;
-    --page-block-size: 480px;
-}
-*/
 img.icon {
     width: 1em;
     height: 1em;
@@ -46,34 +37,16 @@ em {
 }
 .page {
     display: none;
-    /*
-    inline-size: var(--page-inline-size);
-    block-size: var(--page-block-size);
-    min-inline-size: var(--page-inline-size);
-    min-block-size: var(--page-block-size);
-    max-inline-size: var(--page-inline-size);
-    max-block-size: var(--page-block-size);
-    */
-    /*
-    */
-    /*
-    line-height: 1.7em;
-    letter-spacing: 0.05em;
-    color: #000;
-    background-color: #ddd;
-    */
     inline-size: var(--page-inline-size);
     block-size: var(--page-block-size);
     column-width: var(--column-width);
     column-count: var(--column-count);
     column-gap: var(--column-gap);
-    /*
-    */
     writing-mode: var(--writing-mode);
     text-orientation: var(--text-orientation);
     font-size: var(--font-size);
     line-height: var(--line-height);
     letter-spacing: var(--letter-spacing);
 }
-.page.dummy {display: block;}
 .page.show {display: block;}
+/*.page.dummy {display: block;}*/
