@@ -2,7 +2,7 @@
 <html>
 <head lang="ja">
   <meta charset="UTF-8">
-  <title>ページ分割 IntersectionObserverAPI</title>
+  <title>ページ分割 getBoundingClientRect()</title>
   <link rel="stylesheet" href="style.css">
   <script src="../../../../docs/lib/util/type.js"></script>
   <script src="../../../../docs/lib/util/string/trim.js"></script>
@@ -13,12 +13,13 @@
   <script src="../../../../docs/lib/util/promise/wait.js"></script>
   <script src="parser.js"></script>
   <script src="page-splitter.js"></script>
+  <script src="page-viewer.js"></script>
   <script src="main.js"></script>
 </head>
 <body>
-  <h1>ページ分割 IntersectionObserverAPI</h1>
+  <h1>ページ分割 getBoundingClientRect()</h1>
   <button name="view">閲覧する</button>
-  <button name="prev">前</button><span name="nowPage"></span>/<span name="allPage"></span><button name="next">次</button>
+  <button name="prev">前</button><span name="nowPageNum"></span>/<span name="allPageNum"></span><button name="next">次</button>
   <textarea name="manuscript" style="width:100%;">
 # 主題
 ## 副題

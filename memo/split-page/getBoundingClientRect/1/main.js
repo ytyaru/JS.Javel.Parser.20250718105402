@@ -1,20 +1,22 @@
 window.addEventListener('DOMContentLoaded', async(event) => {
-    window.resizeTo(640, 480);
     console.log('DOMContentLoaded!!');
     const parser = new JavelParser();
     const splitter = new PageSplitter(Dom.q(`[name="book"]`));
+    const viewer = new PageViewer();
 //    splitter.target = Dom.q(`[name="book"]`);
     console.log(Dom.q(`[name="view"]`))
     Dom.q(`[name="view"]`).addEventListener('click', async(e)=>{
         console.log(Dom.q(`[name="manuscript"]`).value);
         parser.text = Dom.q(`[name="manuscript"]`).value;
+//        console.log(parser.els);
+//        Dom.q(`[name="book"]`).append(...parser.els);
         splitter.split(parser.els);
         console.log(splitter.pages);
         Dom.q(`[name="book"]`).append(...splitter.pages);
 
         Dom.q(`.page`).classList.add('show');
-        Dom.q(`[name="nowPage"]`).textContent = '1';
-        Dom.q(`[name="allPage"]`).textContent = `${splitter.pages.length}`;
+        Dom.q(`[name="nowPageNum"]`).textContent = '1';
+        Dom.q(`[name="allPageNum"]`).textContent = `${splitter.pages.length}`;
 
         console.log(Css.get(`--page-inline-size`), Css.get(`--page-block-size`));
 //        Dom.q(`[name="book"]`).append(...parser.els);
@@ -36,6 +38,14 @@ window.addEventListener('DOMContentLoaded', async(event) => {
         console.log(type.value, pageTypes.get(type.value), pageTypes.get(type.value).size);
         pageTypes.get(type.value).redom(parser.els);
         */
+    });
+    Dom.q(`[name="prev"]`).addEventListener('click', async(e)=>{
+        viewer.showPrevPage();
+        Dom.q(`[name="nowPageNum"]`).textContent = viewer.nowPageNum;
+    });
+    Dom.q(`[name="next"]`).addEventListener('click', async(e)=>{
+        viewer.showNextPage();
+        Dom.q(`[name="nowPageNum"]`).textContent = viewer.nowPageNum;
     });
     /*
     type.dispatchEvent(new Event('input'));
