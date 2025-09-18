@@ -75,5 +75,5 @@ em {
     line-height: var(--line-height);
     letter-spacing: var(--letter-spacing);
 }
-.page.dummy {display: block;}
 .page.show {display: block;}
+/*.page.dummy {display: block;}*/
