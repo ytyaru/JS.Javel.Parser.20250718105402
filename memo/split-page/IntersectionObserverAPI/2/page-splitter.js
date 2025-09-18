@@ -32,7 +32,7 @@ class PageSplitter {
         this._.pages = [];
         this._.dummy.show();
         for (let el of els) {
-//            this._.dummy.observe(el);
+            this._.dummy.observe(el);
             this._.dummy.el.appendChild(el); // ブロック要素単位（h, p）
             /*
             console.log(this._.dummy.isIntersecting);
@@ -162,18 +162,19 @@ class DummyPage {
         this._.iobserver = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
                 this._.isIntersecting = entry.isIntersecting;
-                console.log(entry);
-                if (this._.isIntersecting) {
+                console.log('intersect:', this._.isIntersecting, entry);
+                if (!this._.isIntersecting) {
                     this._.pm.make();
                 }
             });
         }, {root:this._.el, rootMargin:'0px', threshold:1.0});
         this._.mobserver = new MutationObserver((mutationsList, observer) => {
-            console.log('Mutation');
+            console.log('Mutation:', mutationsList);
             for (const mutation of mutationsList) {
 //                console.log(mutation);
                 //if (mutation.type === 'childList' && mutation.addedNodes.length > 0) {
                 if (mutation.addedNodes.length > 0) {
+                    console.log(mutation);
                     let lastEl = [...mutation.addedNodes].at(-1);
                     if (Node.TEXT_NODE===lastEl.nodeType) {lastEl = lastEl.parentElement;}
                     if (Node.ELEMENT_NODE===lastEl.nodeType) {this.observe(lastEl);}// 最後のELEMENT_NODEを監視対象にする
@@ -199,6 +200,7 @@ class DummyPage {
         this._.mobserver.observe(this._.el, {childList:true, subtree:true});
     }
     observe(el) {// 引数elがdummypage内にあるか判定する
+        console.log('observe():',el);
 //        if (!Type.isEl(el)) {throw new TypeError(`引数elはHTML要素であるべきです。`)}
         this._.iobserver.disconnect();
         this._.iobserver.observe(el);
