@@ -129,7 +129,8 @@ class JavelParser {
 */
 class TextBlock {
     constructor() {this._={}; this._.blocks=[];}
-    fromText(text) {
+    //fromText(text) {
+    parse(text) {
         this._.blocks = [];
         if (0===text.trim().length) { return this._.blocks }
         //text = text.replace('\r\n', '\n')
@@ -142,15 +143,15 @@ class TextBlock {
             start = match.index + 2
         }
         this._.blocks.push(text.slice(start).trimLine())
-        return blocks.filter(v=>v).map(b=>/^#{1,6} /.test(b) ? b.split('\n') : b).flat();
+        return this._.blocks.filter(v=>v).map(b=>/^#{1,6} /.test(b) ? b.split('\n') : b).flat();
     }
-    async *generate(text) {
+    *generate(text) {
+        console.log('TextBlock.generate():', text);
         this._.blocks = [];
         if (0===text.trim().length) { return this._.blocks }
-        //text = text.replace(/\r?\n/gm, '\n')
-        //text = text.replace(/\r\n?/gm, '\n').trimLine();
         text = text.normalizeLineBreaks().trimLine();
         let start = 0; let block = null;
+        console.log(text, text.matchAll(/\n\n/gm));
         for (let match of text.matchAll(/\n\n/gm)) {
             block = text.slice(start, match.index).trimLine();
             this._.blocks.push(block);
@@ -158,9 +159,9 @@ class TextBlock {
             yield block;
         }
         block = text.slice(start).trimLine();
-        blocks.push(block);
+        this._.blocks.push(block);
         yield block;
-        this._.blocks = blocks.filter(v=>v).map(b=>/^#{1,6} /.test(b) ? b.split('\n') : b).flat();
+        this._.blocks = this._.blocks.filter(v=>v).map(b=>/^#{1,6} /.test(b) ? b.split('\n') : b).flat();
     }
     get blocks() {return this._.blocks}
 }
@@ -174,14 +175,20 @@ class HtmlParser {
     get els() {return this.toEls(this._blocks)}
     get html() {return this.toHtmls(this._blocks).join((this._hasNewline) ? '\n' : '')}
     get htmls() {return this.toEls(blocks).map(el=>el.outerHTML)}
+    toEl(block, bi) {
+        const el = ((this.#isHeading(block)) ? this.#getHeadingEl(block) : Dom.tags.p(...this.#inlines(block)));
+        if (Type.isInt(bi)) {el.dataset.bi = bi;}
+        return el;
+    }
     toEls(blocks) {
         if (!Type.isStrs(blocks)) {throw new TypeError(`引数はblocksであるべきです。`)}
+        return blocks.map((b,i)=>this.toEl(b,i));
         //return blocks.map(b=>((this.#isHeading(b)) ? this.#getHeadingEl(b) : Dom.tags.p(...this.#inlines(b))))
-        return blocks.map((b,i)=>{
-            const el = ((this.#isHeading(b)) ? this.#getHeadingEl(b,i) : Dom.tags.p(...this.#inlines(b)));
-            el.dataset.bi = i;
-            return el;
-        });
+//        return blocks.map((b,i)=>{
+//            const el = ((this.#isHeading(b)) ? this.#getHeadingEl(b,i) : Dom.tags.p(...this.#inlines(b)));
+//            el.dataset.bi = i;
+//            return el;
+//        });
     }
     toHtml(blocks, hasNewline=false) {return this.toHtmls(blocks).join((hasNewline) ? '\n' : '')}
     toHtmls(blocks) {return this.toEls(blocks).map(el=>el.outerHTML)}
@@ -212,14 +219,20 @@ class HtmlParser {
     #genRuby(matches) { return matches.map(m=>({match:m, html:Dom.tags.ruby({'data-bis':m.index, 'data-len':m[0].Graphemes.length}, m[1], Dom.tags.rp('（'), Dom.tags.rt(m[2]), Dom.tags.rp('）')), 'index':m.index, length:m[0].length})) }
 }
 class JavelMeta {// https://github.com/nodeca/js-yaml 依存
-    constructor(manuscript) {
-        this._={manuscript:null, javel:null, text:null, el:null, bp:new TextBlock(), hp:new HtmlParser()};
+    constructor(bp,hp,manuscript) {
+        this._={manuscript:null, javel:null, text:null, el:null, bp:bp, hp:hp};
+        this.manuscript = manuscript;
     }
+    get manuscript() {return this._.manuscript}
+    set manuscript(v) {if(Type.isStr(v)){this._.manuscript=v; this.parse();}}
+    set #manuscript(v) {if(Type.isStr(v)){this._.manuscript=v;}}
     parse(manuscript) {
-        if (!Type.isStr(manuscript)) {throw new TypeError(`引数manuscriptは文字列型であるべきです。`)}
-        this._.manuscript = manuscript;
+        this.#manuscript = manuscript;
+        if (!Type.isStr(this.manuscript)) {console.debug(this.manuscript);throw new TypeError(`manuscriptは文字列型であるべきです。`)}
         if (0===this._.manuscript.length) {console.warn('メタデータがありません。')}
         this._.javel = jsyaml.load(this._.manuscript);
+        this._.el = structuredClone(this._.javel);
+        this.#parseEl(this._.javel, this._.el);
     }
     get text() {return this._.manuscript}
     get obj() {return this._.obj}
@@ -227,28 +240,76 @@ class JavelMeta {// https://github.com/nodeca/js-yaml 依存
     get javel() {return this._.javel}
     get text() {return this._.text}
     get el() {return this._.el}
+    #parseEl(jo, eo) {// javel→el
+        for (let k of Object.keys(jo)) {
+            if (Type.isObj(jo[k])) {this.#parseEl(jo[k], eo[k]);}
+            else {eo[k] = this._.hp.toEls(this._.bp.parse(jo[k]));}
+        }
+    }
 }
 class JavelBody {
-    constructor(manuscript) {
-
+    constructor(bp,hp,manuscript) {
+        this._={manuscript:null, blocks:[], texts:[], els:[], bp:bp, hp:hp};
+        this.manuscript = manuscript;
+    }
+    get manuscript() {return this._.manuscript}
+    set manuscript(v) {if(Type.isStr(v)){this._.manuscript=v;}}
+    get blocks() {return this._.blocks}
+    get texts() {return this._.texts}
+    get els() {return this._.els}
+    parse(manuscript) {
+        this.manuscript = manuscript;
+        if (0===this._.manuscript.length) {console.warn('本文がありません。')}
+        this._.els = this._.hp.toEls(this._.bp.parse(this._.manuscript));
+        return this._.els;
+    }
+    *generate(manuscript) {
+        console.log(this.manuscript.length, manuscript?.length)
+        this.manuscript = manuscript;
+        console.log(this.manuscript.length, manuscript?.length)
+        this._.els = []
+        console.log('JavelBody.generate()');
+        for (let block of this._.bp.generate(this.manuscript)) {
+            const el = this._.hp.toEl(block);
+            this._.els.push(el);
+            yield el;
+        }
     }
 }
 class JavelParser {
     constructor(manuscript) {
-        this._={manuscript:null, meta:null, body:null};
-        if (!Type.isStr(manuscript)) {throw new TypeError(`引数manuscriptは文字列型であるべきです。`)}
-        this._.manuscript = manuscript.normalizeLineBreaks().trimLine();
-        this._.bp = new TextBlock();
+        const bp=new TextBlock(), hp=new HtmlParser();
+        this._={manuscript:null, meta:new JavelMeta(bp,hp), body:new JavelBody(bp,hp)};
+//        if (!Type.isStr(manuscript)) {throw new TypeError(`引数manuscriptは文字列型であるべきです。`)}
+//        this._.manuscript = manuscript.normalizeLineBreaks().trimLine();
+//        this._.bp = new TextBlock();
         this.#parse();
     }
+    get manuscript() {return this._.manuscript}
+    set manuscript(v) {if(Type.isStr(v)){this._.manuscript=v.normalizeLineBreaks().trimLine(); this.#parse();}}
     get meta() {return this._.meta}
     get body() {return this._.body}
-    #parse(text) {
-        const fences = this._.manuscript.matchAll(/^---$/);
-        const fenceText = (fences.length < 2) ? '' : this._.manuscript.slice(fences[0].index+4, fences[1].index-1);
-        this._.bp.fromText(fenceText)
-        this._.meta.parse(fenceText);
+    #parse() {
+        if (!Type.isStr(this._.manuscript)) {return}
+//        const fences = [...this._.manuscript.matchAll(/^---$/g)];
+        const fences = [...this._.manuscript.matchAll(/^---/gm)];
+//        const fences = [...this._.manuscript.matchAll(/^\-\-\-$/g)];
+        console.log(fences);
+        console.log((fences.length < 2) ? '' : this._.manuscript.slice(fences[0].index+4, fences[1].index-1).trimLine());
+        this._.meta.manuscript = (fences.length < 2) ? '' : this._.manuscript.slice(fences[0].index+4, fences[1].index-1).trimLine();
 
+        const firstHeading = this._.manuscript.match(/^# /m);
+        console.log(firstHeading);
+        console.log(firstHeading.index);
+//        console.log(this._.manuscript.slice(firstHeading.index));
+//        console.log((null===firstHeading) ? '' : this._.manuscript.slice(firstHeading[0].index + firstHeading[0].length).trimLine());
+//        this._.body.manuscript = (null===firstHeading) ? '' : this._.manuscript.slice(firstHeading[0].index + firstHeading[0].length).trimLine();
+        this._.body.manuscript = (null===firstHeading) ? '' : this._.manuscript.slice(firstHeading.index).trimLine();
+        console.log('************************************');
+        console.log('************************************');
+        console.log('************************************');
+        console.log('本文：',this._.body.manuscript);
+        /*
         const headings = this._.manuscript.matchAll(/^# /);
         if (0===headings.length && 0===fences.length) {throw new TypeError(`Javel形式のテキストは行頭が# か---で始まるべきです。`)}
         if (0===fences[0].index) {// 全メタ情報をFrontMatterで表記した書式である
@@ -289,9 +350,9 @@ class JavelParser {
 //        console.log(firstIdx, secondIdx);
         this._.coverRng = [firstIdx, secondIdx];
         this._.contentRng = [secondIdx, this._.blocks.length];
-
-
+        */
     }
+    /*
     async *generate(text) {
 
     }
@@ -333,6 +394,7 @@ class JavelParser {
 
 
     }
+    */
     /*
     #set(o, name, coverBlocks, prefix='# ') {
         let i = coverBlocks.findIndex(b=>b.startsWith(prefix));

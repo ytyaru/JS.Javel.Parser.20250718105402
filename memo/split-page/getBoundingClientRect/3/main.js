@@ -1,13 +1,25 @@
 window.addEventListener('DOMContentLoaded', async(event) => {
     console.log('DOMContentLoaded!!');
     const parser = new JavelParser();
-    const splitter = new PageSplitter(Dom.q(`[name="book"]`));
+    //const splitter = new PageSplitter(Dom.q(`[name="book"]`));
+    //const splitter = new PageSplitter(parser, Dom.q(`[name="book"]`));
+    const splitter = new PageSplitter(parser);
     const viewer = new PageViewer();
 //    splitter.target = Dom.q(`[name="book"]`);
     console.log(Dom.q(`[name="view"]`))
     Dom.q(`[name="view"]`).addEventListener('click', async(e)=>{
+        Dom.q(`[name="book"]`).innerHTML = '';
         console.log(Dom.q(`[name="manuscript"]`).value);
-        parser.text = Dom.q(`[name="manuscript"]`).value;
+        parser.manuscript = Dom.q(`[name="manuscript"]`).value;
+        Dom.q(`[name="nowPageNum"]`).textContent = '1';
+        for (let page of splitter.generate()) {
+            console.log('ページ数:',page.dataset.page)
+            if ('1'==page.dataset.page) {Dom.q(`.page`).classList.add('show');}
+            Dom.q(`[name="book"]`).appendChild(page);
+            Dom.q(`[name="allPageNum"]`).textContent = `${page.dataset.page}`;
+        }
+        Dom.q(`.page`).classList.add('show');
+        /*
 //        console.log(parser.els);
 //        Dom.q(`[name="book"]`).append(...parser.els);
         splitter.split(parser.els);
@@ -21,6 +33,7 @@ window.addEventListener('DOMContentLoaded', async(event) => {
         console.log(Css.get(`--page-inline-size`), Css.get(`--page-block-size`));
 //        Dom.q(`[name="book"]`).append(...parser.els);
 //        splitter.split(parser.els);
+        */
         /*
         console.log('view input!!');
         console.log(Dom);
