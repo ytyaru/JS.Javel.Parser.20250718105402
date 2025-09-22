@@ -269,10 +269,11 @@ class JavelBody {
         console.log(this.manuscript.length, manuscript?.length)
         this._.els = []
         console.log('JavelBody.generate()');
+        let bi = 0;
         for (let block of this._.bp.generate(this.manuscript)) {
-            const el = this._.hp.toEl(block);
+            const el = this._.hp.toEl(block, bi);
             this._.els.push(el);
-            yield el;
+            yield el; bi++;
         }
     }
 }
