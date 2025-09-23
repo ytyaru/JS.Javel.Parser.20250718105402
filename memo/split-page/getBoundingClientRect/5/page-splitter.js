@@ -18,19 +18,27 @@ class PageSplitter {
         await new Promise(resolve => setTimeout(resolve, 0)); // イベントループを解放
         console.log(this._.jp.body);
         console.log(this._.jp.body.manuscript.length);
-        for (let el of this._.jp.body.generate()) {
-            console.log('splitter.generate():', el);
+        //for (let el of this._.jp.body.generate()) {
+        //for await (let el of this._.jp.body.generateAsync()) {
+        for await (let [el, inlines] of this._.jp.body.generateEntriesAsync()) {
+            console.log('splitter.generate():', el, inlines);
             this._.dummy.el.appendChild(el); // ブロック要素単位（h, p）
             if (this._.dummy.without) {
                 this._.dummy.el.removeChild(el);
 //                if ('P'===el.tagName) {yield* this.#splitNodes([...el.childNodes], parseInt(el.dataset.bi));}// もしp要素ならinline要素単位で分割し挿入する
                 if ('P'===el.tagName) {// もしp要素ならinline要素単位で分割し挿入する
                     this.#makeFirstP(true, parseInt(el.dataset.bi));
-                    yield* this.#splitNodes([...el.childNodes], parseInt(el.dataset.bi));
+                    yield* this.#splitNodes([...el.childNodes], inlines, parseInt(el.dataset.bi));
                 }
                 //else {this.#makePage(el); yield this._.pages.at(-1);}//BlockElement単体(h,p)で画面サイズ超過するのは想定外(ruby,em,br等は全て単体で画面要素内に収まる事)
-                else {console.log('*******generate() else:', el.textContent);yield* this.#makePage(el);}//BlockElement単体(h,p)で画面サイズ超過するのは想定外(ruby,em,br等は全て単体で画面要素内に収まる事)
+                else {//<p>以外のBlockElement単体で画面サイズ超過するのは想定外(h1〜h6(の中にあるruby,em,br等も含めて)。<p>以外のブロック要素は全て単体で画面要素内に収まる事)
+                    console.log('*******generate() else:', el.textContent);
+                    yield* this.#makePage(el);
+                }
             }
+//                else {console.log('*******generate() else:', el.textContent);yield* this.#makePage(el);}//<p>以外のBlockElement単体で画面サイズ超過するのは想定外(h1〜h6(の中にあるruby,em,br等も含めて)。<p>以外のブロック要素は全て単体で画面要素内に収まる事)
+//            } else {this._.jp.body.progress.now += inlines.join('').length}
+//            } else {this._.jp.body.progress.now += [...inlines.join('')].length}
             await new Promise(resolve => setTimeout(resolve, 0)); // イベントループを解放
         }
         //this.#makePage();
@@ -92,7 +100,8 @@ class PageSplitter {
     }
     */
     //#splitNodes(nodes, bi=-1, si=-1) {
-    *#splitNodes(nodes, bi=-1, si=-1) {
+    //*#splitNodes(nodes, bi=-1, si=-1) {
+    async *#splitNodes(nodes, inlines, bi=-1, si=-1) {
 //        const p = this.#makeFirstP(true, bi, si);
         //if (this._.dummy.without) {this._.dummy.el.removeChild(p); this.#makePage(null, bi, si); return this.#splitNodes(nodes, bi, si);}
         //if (this._.dummy.without) {this._.dummy.el.removeChild(p); this.#makePage(null, bi, si); yield* this.#splitNodes(nodes, bi, si);}
@@ -119,9 +128,10 @@ class PageSplitter {
                 if (Node.ELEMENT_NODE===p.lastChild?.nodeType && 'BR'===p.lastElementChild?.tagName) {
                     if (-1===si) {si=0; p.dataset.si=si;}
                     yield* this.#makePage(null, bi, si);
+                    await new Promise(resolve => setTimeout(resolve, 0)); // イベントループを解放
 //                    this.#makePage(null, bi, si);
 //                    yield this._.pages.at(-1);
-                    yield* this.#splitNodes(nodes.slice(i), bi, si+1);
+                    yield* this.#splitNodes(nodes.slice(i), inlines.slice(i), bi, si+1);
                     //return this.#splitNodes(nodes.slice(i), bi, si+1);
                 }
                 //else if (Node.TEXT_NODE===nodes[i].nodeType) {this.#splitSentences(nodes[i].textContent.Sentences, bi, si)}
@@ -129,12 +139,15 @@ class PageSplitter {
                 else {// 再帰する
                     if (-1===si) {si=0; p.dataset.si=si;}
                     yield* this.#makePage(null, bi, si);
+                    await new Promise(resolve => setTimeout(resolve, 0)); // イベントループを解放
 //                    this.#makePage(null, bi, si);
 //                    yield this._.pages.at(-1);
-                    yield* this.#splitNodes(nodes.slice(i), bi, si+1);
+                    yield* this.#splitNodes(nodes.slice(i), inlines.slice(i), bi, si+1);
                     //return this.#splitNodes(nodes.slice(i), bi, si+1);
                     //yield* this.#splitNodes(nodes.slice(i), bi, si+1);
                 }
+//            } else {this._.jp.body.progress.now += inlines[i].length}
+//            } else {this._.jp.body.progress.now += [...inlines[i]].length}
             }
         }
     }
@@ -144,7 +157,8 @@ class PageSplitter {
         return p.lastChild;
     }
     //#splitSentences(sentences, bi=-1, si=-1) {//:node.textContent.Sentences 一文単位の配列
-    *#splitSentences(sentences, bi=-1, si=-1) {//:node.textContent.Sentences 一文単位の配列
+    //*#splitSentences(sentences, bi=-1, si=-1) {//:node.textContent.Sentences 一文単位の配列
+    async *#splitSentences(sentences, bi=-1, si=-1) {//:node.textContent.Sentences 一文単位の配列
         console.log('#splitSentences():', sentences, bi, si);
         if (1===sentences.length) {yield* this.#splitWords(sentences[0].Words, bi, si);}
         let lastNode = this.#makeLastTextNode(bi, si);
@@ -155,11 +169,15 @@ class PageSplitter {
                 lastNode.textContent = lastNode.textContent.slice(0, sentences[i].length*-1);
                 //lastNode = this.#splitWords(sentences[i].Words, bi, si);
                 yield* this.#splitWords(sentences[i].Words, bi, si);
+                await new Promise(resolve => setTimeout(resolve, 0)); // イベントループを解放
+//            } else {this._.jp.body.progress.now += sentences[i].length}
+//            } else {this._.jp.body.progress.now += [...sentences[i]].length}
             }
         }
     }
     //#splitWords(words, bi=-1, si=-1) {//:node.textContent.Words 一語単位の配列
-    *#splitWords(words, bi=-1, si=-1) {//:node.textContent.Words 一語単位の配列
+    //*#splitWords(words, bi=-1, si=-1) {//:node.textContent.Words 一語単位の配列
+    async *#splitWords(words, bi=-1, si=-1) {//:node.textContent.Words 一語単位の配列
         console.log('#splitWords():', words, bi, si);
         if (1===words.length) {yield* this.#splitGraphemes(words[0].Graphemes, bi, si);}
         let lastNode = this.#makeLastTextNode(bi, si);
@@ -169,14 +187,18 @@ class PageSplitter {
                 console.log('#splitWords() 超過:', bi, si, i, words[i]);
                 lastNode.textContent = lastNode.textContent.slice(0, words[i].length*-1);
                 yield* this.#splitGraphemes(words[i].Graphemes, bi, si);
+                await new Promise(resolve => setTimeout(resolve, 0)); // イベントループを解放
 //                lastNode = this.#splitGraphemes(words[i].Graphemes, bi, si);
 //                if (Type.isEl(lastNode)) {yield* this._.pages.at(-1);}
+//            } else {this._.jp.body.progress.now += words[i].length}
+//            } else {this._.jp.body.progress.now += [...words[i]].length}
             }
         }
 //        return this._.dummy.el.querySelector(`p:last-child`);
     }
     //#splitGraphemes(graphemes, bi=-1, si=-1) {//graphemes:node.textContent.Graphemes 一文字単位の配列
-    *#splitGraphemes(graphemes, bi=-1, si=-1) {//graphemes:node.textContent.Graphemes 一文字単位の配列
+    //*#splitGraphemes(graphemes, bi=-1, si=-1) {//graphemes:node.textContent.Graphemes 一文字単位の配列
+    async *#splitGraphemes(graphemes, bi=-1, si=-1) {//graphemes:node.textContent.Graphemes 一文字単位の配列
         console.log('#splitGraphemes():', graphemes);
         const lastNode = this.#makeLastTextNode(bi, si);
         const p = this._.dummy.el.querySelector(`p:last-child`);
@@ -184,6 +206,8 @@ class PageSplitter {
             lastNode.textContent += graphemes[i];
             if (this._.dummy.without) {
                 lastNode.textContent = lastNode.textContent.slice(0, graphemes[i].length*-1);
+                this._.jp.body.progress.now += graphemes.slice(0, i).length;
+//                this._.jp.body.progress.now += [...graphemes.slice(0, i)].length;
                 if (0===p.textContent.length) {// 一文字も入らない（si=-1のはず）
                     console.assert(-1===si); // si=-1のはず
                     console.log('si:', si);
@@ -191,6 +215,7 @@ class PageSplitter {
                     this._.dummy.el.removeChild(p);
 //                    this.#makePage(null, bi, si);
                     yield* this.#makePage(null, bi, si);
+                    await new Promise(resolve => setTimeout(resolve, 0)); // イベントループを解放
                     yield* this.#splitGraphemes(graphemes.slice(i), bi, si); // si=-1のはず
                 } else {// 一文字以上ある
                     if (-1===si) {p.dataset.si = 0}
@@ -200,10 +225,14 @@ class PageSplitter {
                     console.log(lastNode.textContent);
                     //this.#makePage(null, bi, SI);
                     yield* this.#makePage(null, bi, SI);
+                    await new Promise(resolve => setTimeout(resolve, 0)); // イベントループを解放
                     yield* this.#splitGraphemes(graphemes.slice(i), bi, SI+1);
                 }
 //                return this._.dummy.el.querySelector(`p:last-child`);
+//                await new Promise(resolve => setTimeout(resolve, 0)); // イベントループを解放
+//            await new Promise(resolve => setTimeout(resolve, 0)); // イベントループを解放
             }
+            //} else {this._.jp.body.progress.now += graphemes[i].length}
         }
 //        return this._.dummy.el.querySelector(`p:last-child`);
     }

@@ -171,6 +171,13 @@ class HtmlParser {
     get els() {return this.toEls(this._blocks)}
     get html() {return this.toHtmls(this._blocks).join((this._hasNewline) ? '\n' : '')}
     get htmls() {return this.toEls(blocks).map(el=>el.outerHTML)}
+    toElBl(block, bi) {
+        const [el, inlines] = this.#getHeadingElBl(block) ?? this.#getParagraphElBl(block);
+//        const inlines = this.#inlines(block);
+//        const el = (this.#isHeading(block)) ? this.#getHeadingEl(block, inlines) : Dom.tags.p(...inlines);
+        if (Type.isInt(bi)) {el.dataset.bi = bi;}
+        return [el, inlines]; // [blockのHTML要素, block内を子要素に分割した文字列配列]
+    }
     toEl(block, bi) {
         const el = ((this.#isHeading(block)) ? this.#getHeadingEl(block) : Dom.tags.p(...this.#inlines(block)));
         if (Type.isInt(bi)) {el.dataset.bi = bi;}
@@ -183,11 +190,40 @@ class HtmlParser {
     toHtml(blocks, hasNewline=false) {return this.toHtmls(blocks).join((hasNewline) ? '\n' : '')}
     toHtmls(blocks) {return this.toEls(blocks).map(el=>el.outerHTML)}
     #isHeading(v) {return /^(#{1,6}) (.+)$/.test(v)}
+    #getHeadingElBl(block) {
+        const match = block.match(/^(#{1,6}) (.+)$/);
+        if (!match) {return null}
+        const level = match[1].length;
+        const inline = match[2];
+//        const inlines = this.#inlines(inline);
+//        return [Dom.tags[`h${level}`](...inlines), inlines];
+        const elbl = this.#inlineElBl(block);
+        return [Dom.tags[`h${level}`](...elbl.map(eb=>eb.html ?? eb.javel)), elbl.map(eb=>eb.javel)];
+    }
+    #getParagraphElBl(block) {
+        //const inlines = this.#inlines(block);
+        //return [Dom.tags.p(...inlines), inlines];
+        const elbl = this.#inlineElBl(block);
+        return [Dom.tags.p(...elbl.map(eb=>eb.html ?? eb.javel)), elbl.map(eb=>eb.javel)];
+    }
     #getHeadingEl(v) {
         const match = v.match(/^(#{1,6}) (.+)$/);
         const level = match[1].length;
         const inline = match[2];
         return Dom.tags[`h${level}`](...this.#inlines(inline));
+    }
+    #inlineElBl(block) {
+        const inlines = []; let start = 0;
+        for (let d of this.#genBrEmRuby(block)) {
+            console.log(d);
+            //inlines.push(block.slice(start, d.index))
+            inlines.push({html:null, javel:block.slice(start, d.index)})
+            inlines.push({html:d.html, javel:d.match[0]})
+            start = d.index + d.length
+        }
+        //inlines.push(block.slice(start).trimLine());
+        inlines.push({html:null, javel:block.slice(start).trimLine()});
+        return inlines.filter(v=>v.javel);
     }
     #inlines(block) { 
         const inlines = []; let start = 0;
@@ -237,16 +273,32 @@ class JavelMeta {// https://github.com/nodeca/js-yaml 依存
         }
     }
 }
+class Progress {
+    constructor(all=0) {this._ = {rate:0, now:0, all:0}; this.clear(all);}
+    get rate() {return this._.rate}
+    get now() {return this._.now}
+    set now(v) {if (Type.isNum(v)) {this._.now = v; this.#calc();}}
+    get all() {return this._.all}
+    set all(v) {if (Type.isNum(v)) {this._.all = v; this.clear(v);}}
+    clear(all=0) {this._.all = all; this._.now = 0; this._.rate = 0;}
+    #calc() {
+        this._.rate = (this._.now / this._.all) * 100;
+        if (100 < this._.rate) {this._.rate=100}
+        console.log(this._.rate, '% *******************************', this._.now , this._.all);
+    }
+}
 class JavelBody {
     constructor(bp,hp,manuscript) {
-        this._={manuscript:null, blocks:[], texts:[], els:[], bp:bp, hp:hp};
+        //this._={manuscript:null, blocks:[], texts:[], els:[], bp:bp, hp:hp, progress:{rate:0, now:0, all:0}};
+        this._={manuscript:null, blocks:[], texts:[], els:[], bp:bp, hp:hp, progress:new Progress()};
         this.manuscript = manuscript;
     }
     get manuscript() {return this._.manuscript}
-    set manuscript(v) {if(Type.isStr(v)){this._.manuscript=v;}}
+    set manuscript(v) {if(Type.isStr(v)){this._.manuscript=v;this._.progress.clear(v.length);}}
     get blocks() {return this._.blocks}
     get texts() {return this._.texts}
     get els() {return this._.els}
+    get progress() {return this._.progress}
     parse(manuscript) {
         this.manuscript = manuscript;
         if (0===this._.manuscript.length) {console.warn('本文がありません。')}
@@ -263,16 +315,64 @@ class JavelBody {
         for (let block of this._.bp.generate(this.manuscript)) {
             const el = this._.hp.toEl(block, bi);
             this._.els.push(el);
+//            this.#calcProgress(block);
             yield el; bi++;
         }
     }
+    async *generateAsync(manuscript) {
+        console.log(this.manuscript.length, manuscript?.length)
+        this.manuscript = manuscript;
+        console.log(this.manuscript.length, manuscript?.length)
+        this._.els = []
+        console.log('JavelBody.generate()');
+        let bi = 0;
+        for (let block of this._.bp.generate(this.manuscript)) {
+            const el = this._.hp.toEl(block, bi);
+            this._.els.push(el);
+//            this.#calcProgress(block);
+            await new Promise(resolve => setTimeout(resolve, 0)); // イベントループを解放
+            yield el; bi++;
+        }
+    }
+    async *generateEntriesAsync(manuscript) {
+        console.log(this.manuscript.length, manuscript?.length)
+        this.manuscript = manuscript;
+        console.log(this.manuscript.length, manuscript?.length)
+        this._.els = []
+        console.log('JavelBody.generate()');
+        let bi = 0;
+        for (let block of this._.bp.generate(this.manuscript)) {
+            //const el = this._.hp.toEl(block, bi);
+            const [el, inlines] = this._.hp.toElBl(block, bi);
+            this._.els.push(el);
+//            this.#calcProgress(block);
+            await new Promise(resolve => setTimeout(resolve, 0)); // イベントループを解放
+            yield [el, inlines]; bi++;
+        }
+    }
+    /*
+    #resetProgress() {
+        this._.progress.all = this.manuscript.length;
+        this._.progress.now = 0;
+        this._.progress.rate = 0;
+    }
+    #calcProgress(block) {
+        this._.progress.now = (block.length + 2 + this._.progress.now);
+        this._.progress.rate = (this._.progress.now / this._.progress.all) * 100;
+        if (100 < this._.progress.rate) {this._.progress.rate=100}
+        console.log(this._.progress.rate, '% *******************************', this._.progress.now , this._.progress.all);
+    }
+    */
 }
 class JavelParser {
     constructor(manuscript) {
         const bp=new TextBlock(), hp=new HtmlParser();
+        //this._={manuscript:null, meta:new JavelMeta(bp,hp), body:new JavelBody(bp,hp), progress:{rate:0, now:0, all,0}};
         this._={manuscript:null, meta:new JavelMeta(bp,hp), body:new JavelBody(bp,hp)};
         this.#parse();
     }
+//    get progress() {return this._.progress}
+//    set #progress() {this._.progress=v}
     get manuscript() {return this._.manuscript}
     set manuscript(v) {if(Type.isStr(v)){this._.manuscript=v.normalizeLineBreaks().trimLine(); this.#parse();}}
     get meta() {return this._.meta}
@@ -285,6 +385,8 @@ class JavelParser {
         // 本文
         const firstHeading = this._.manuscript.match(/^# /m);
         this._.body.manuscript = (null===firstHeading) ? '' : this._.manuscript.slice(firstHeading.index).trimLine();
+        // 進捗率
+//        this._.progress.all = this._.meta.manuscript + this._.body.manuscript;
     }
 }
 

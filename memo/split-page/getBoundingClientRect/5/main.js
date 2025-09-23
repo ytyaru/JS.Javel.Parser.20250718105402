@@ -12,20 +12,23 @@ window.addEventListener('DOMContentLoaded', async(event) => {
         console.log(Dom.q(`[name="manuscript"]`).value);
         parser.manuscript = Dom.q(`[name="manuscript"]`).value;
         Dom.q(`[name="nowPageNum"]`).textContent = '1';
+        Dom.q(`[name="progressRate"]`).style.display = 'inline';
         for await (let page of splitter.generateAsync()) {
             console.log('ページ数:',page.dataset.page)
             if ('1'==page.dataset.page) {Dom.q(`.page`).classList.add('show');await new Promise(resolve => setTimeout(resolve, 0));}
             //if ('1'==page.dataset.page) {page.classList.add('show');await new Promise(resolve => setTimeout(resolve, 0));}
             //if ('1'==page.dataset.page) {Dom.q(`.page:not(.dummy)`).classList.add('show');await new Promise(resolve => setTimeout(resolve, 0));}
             //if ('1'==page.dataset.page) {page.classList.add('show');await new Promise(resolve => setTimeout(resolve, 0));}
+            Dom.q(`[name="progressRate"]`).textContent = `${parser.body.progress.rate.toFixed(100===parser.body.progress.rate ? 0 : 1)}%`;
             Dom.q(`[name="book"]`).appendChild(page);
             Dom.q(`[name="allPageNum"]`).textContent = `${page.dataset.page}<`;
-            console.log('1'==page.dataset.page, '******************************')
+//            console.log('1'==page.dataset.page, '******************************')
             //if ('1'==page.dataset.page) {page.classList.add('show');}
             //if ('1'==page.dataset.page) {Dom.q(`.page:not(.dummy)`).classList.add('show');}
         }
         Dom.q(`[name="allPageNum"]`).textContent = `${Dom.q(`[name="book"] > [data-page]:last-child`).dataset.page}`;
         Dom.q(`.page:not(.dummy)`).classList.add('show');
+        Dom.q(`[name="progressRate"]`).style.display = 'none';
         /*
 //        console.log(parser.els);
 //        Dom.q(`[name="book"]`).append(...parser.els);
