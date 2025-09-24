@@ -10,6 +10,8 @@
     --font-size: 16px;
     --line-height: 1.7em;
     --letter-spacing: 0.05em;
+    --em-style: sesame;
+    --em-color: currentColor;
 }
 img.icon {
     width: 1em;

@@ -142,12 +142,12 @@ class TextBlock {
         return this._.blocks.filter(v=>v).map(b=>/^#{1,6} /.test(b) ? b.split('\n') : b).flat();
     }
     *generate(text) {
-        console.log('TextBlock.generate():', text);
+//        console.log('TextBlock.generate():', text);
         this._.blocks = [];
         if (0===text.trim().length) { return this._.blocks }
         text = text.normalizeLineBreaks().trimLine();
         let start = 0; let block = null;
-        console.log(text, text.matchAll(/\n\n/gm));
+//        console.log(text, text.matchAll(/\n\n/gm));
         for (let match of text.matchAll(/\n\n/gm)) {
             block = text.slice(start, match.index).trimLine();
             this._.blocks.push(block);
@@ -197,7 +197,7 @@ class HtmlParser {
         const inline = match[2];
 //        const inlines = this.#inlines(inline);
 //        return [Dom.tags[`h${level}`](...inlines), inlines];
-        const elbl = this.#inlineElBl(block);
+        const elbl = this.#inlineElBl(inline);
         return [Dom.tags[`h${level}`](...elbl.map(eb=>eb.html ?? eb.javel)), elbl.map(eb=>eb.javel)];
     }
     #getParagraphElBl(block) {
@@ -215,7 +215,7 @@ class HtmlParser {
     #inlineElBl(block) {
         const inlines = []; let start = 0;
         for (let d of this.#genBrEmRuby(block)) {
-            console.log(d);
+//            console.log(d);
             //inlines.push(block.slice(start, d.index))
             inlines.push({html:null, javel:block.slice(start, d.index)})
             inlines.push({html:d.html, javel:d.match[0]})
@@ -284,7 +284,7 @@ class Progress {
     #calc() {
         this._.rate = (this._.now / this._.all) * 100;
         if (100 < this._.rate) {this._.rate=100}
-        console.log(this._.rate, '% *******************************', this._.now , this._.all);
+        console.debug(this._.rate, '% *******************************', this._.now , this._.all);
     }
 }
 class JavelBody {
@@ -306,11 +306,11 @@ class JavelBody {
         return this._.els;
     }
     *generate(manuscript) {
-        console.log(this.manuscript.length, manuscript?.length)
+//        console.log(this.manuscript.length, manuscript?.length)
         this.manuscript = manuscript;
-        console.log(this.manuscript.length, manuscript?.length)
+//        console.log(this.manuscript.length, manuscript?.length)
         this._.els = []
-        console.log('JavelBody.generate()');
+//        console.log('JavelBody.generate()');
         let bi = 0;
         for (let block of this._.bp.generate(this.manuscript)) {
             const el = this._.hp.toEl(block, bi);
@@ -320,11 +320,11 @@ class JavelBody {
         }
     }
     async *generateAsync(manuscript) {
-        console.log(this.manuscript.length, manuscript?.length)
+//        console.log(this.manuscript.length, manuscript?.length)
         this.manuscript = manuscript;
-        console.log(this.manuscript.length, manuscript?.length)
+//        console.log(this.manuscript.length, manuscript?.length)
         this._.els = []
-        console.log('JavelBody.generate()');
+//        console.log('JavelBody.generate()');
         let bi = 0;
         for (let block of this._.bp.generate(this.manuscript)) {
             const el = this._.hp.toEl(block, bi);
@@ -335,11 +335,11 @@ class JavelBody {
         }
     }
     async *generateEntriesAsync(manuscript) {
-        console.log(this.manuscript.length, manuscript?.length)
+//        console.log(this.manuscript.length, manuscript?.length)
         this.manuscript = manuscript;
-        console.log(this.manuscript.length, manuscript?.length)
+//        console.log(this.manuscript.length, manuscript?.length)
         this._.els = []
-        console.log('JavelBody.generate()');
+//        console.log('JavelBody.generate()');
         let bi = 0;
         for (let block of this._.bp.generate(this.manuscript)) {
             //const el = this._.hp.toEl(block, bi);
@@ -347,7 +347,7 @@ class JavelBody {
             this._.els.push(el);
 //            this.#calcProgress(block);
             await new Promise(resolve => setTimeout(resolve, 0)); // イベントループを解放
-            yield [el, inlines]; bi++;
+            yield [el, block, inlines]; bi++;
         }
     }
     /*
