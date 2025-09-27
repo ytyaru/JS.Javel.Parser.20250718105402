@@ -5,8 +5,10 @@
     --column-width: 1;
     --column-count: auto;
     --column-gap: 2em;
-    --writing-mode: horizontal-tb;
-    --text-orientation: mixed;
+    --writing-mode: horizontal-tb; /*vertical-rl*/
+    --text-orientation: mixed; /*upright*/
+    --writing-mode: vertical-rl; /*horizontal-tb*/
+    --text-orientation: upright; /*mixed*/
     --font-size: 16px;
     --line-height: 1.7em;
     --letter-spacing: 0.05em;

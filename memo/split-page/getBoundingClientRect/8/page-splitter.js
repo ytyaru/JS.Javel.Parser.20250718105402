@@ -5,13 +5,14 @@ class PageSplitter {
         this._.size = {inline:inlineSize, block:blockSize}
         this._.writingMode = isHorizontal ? 'horizontal-tb' : 'vertical-rl';
         this._.dummy = new DummyPage();
-        document.body.appendChild(this._.dummy.el);
+        //document.body.appendChild(this._.dummy.el);
         this._.pages = [];
     }
     get pages() {return this._.pages}
 
     async *generateAsync(manuscript) {
         this._.dummy.show();
+        this._.dummy.addTo();
         this._.pages = [];
         this._.jp.manuscript = manuscript;
         yield* this.#makeCover();
@@ -194,6 +195,8 @@ class Page {
     static make() {return Dom.tags.div({class:'page'})}
     constructor() {this._ = {}; this._.el = Dom.tags.div({class:'page'}); this._.writingMode=Css.get('--writing-mode');}
     get el() {return this._.el}
+    //addTo(root=document.body) {if(Type.isEl(root)){root.appendChild(this.el); this._.r = this.el.getBoundingClientRect(); this.#observe();}}
+    addTo(root=document.body) {if(Type.isEl(root)){root.appendChild(this.el); this._.r = this.el.getBoundingClientRect(); this._.b = Css.getFloat(`--page-block-size`);}}
     show() {this._.el.classList.add('show')}
     hide() {this._.el.classList.remove('show')}
     get isVertical() {return 'vertical-rl'===this._.writingMode}
@@ -204,8 +207,28 @@ class Page {
         if (null===this._.el.lastElementChild) {return false}
         // writingModeを取得する。block方向に超過したか確認し、超過ならtrueを返す
         const r = this._.el.lastElementChild.getBoundingClientRect();
-        return this.isVertical ? (r.left < 0) : (Css.getFloat(`--page-block-size`) < r.bottom);
+        //return this.isVertical ? (r.left < 0) : (Css.getFloat(`--page-block-size`) < r.bottom);
+        console.log(this._.b , r.bottom , this._.r.y);
+        return this.isVertical ? (r.left < 0) : (this._.b < (r.bottom - this._.r.y));
+        //return this.isVertical ? (r.left < 0) : (Css.getFloat(`--page-block-size`) < r.bottom);
+        
     }
+    /*
+    #observe() {
+        if (this._.observer) {return}
+        this._.observer = new MutationObserver((mutationsList, observer)=>{
+            for(const mutation of mutationsList) {
+                if (mutation.type === 'attributes' && mutation.attributeName === 'style') {
+                    this._.r = this.el.getBoundingClientRect();
+                }
+            }
+        });
+        this._.observer.observe(this._.el, {
+            attributes: true,
+            attributeFilter: ['style'],
+        });
+    }
+    */
 }
 class DummyPage extends Page {constructor() {super(); this._.el.classList.add('dummy');}}
 
