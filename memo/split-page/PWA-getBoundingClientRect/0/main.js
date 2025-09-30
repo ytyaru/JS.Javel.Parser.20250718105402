@@ -1,27 +1,49 @@
 window.addEventListener('DOMContentLoaded', async(event) => {
-    window.resizeTo(640, 480);
     console.log('DOMContentLoaded!!');
     const parser = new JavelParser();
-    const splitter = new PageSplitter(Dom.q(`[name="book"]`));
+    //const splitter = new PageSplitter(Dom.q(`[name="book"]`));
+    //const splitter = new PageSplitter(parser, Dom.q(`[name="book"]`));
+    const splitter = new PageSplitter(parser);
+    const viewer = new PageViewer();
 //    splitter.target = Dom.q(`[name="book"]`);
     console.log(Dom.q(`[name="view"]`))
     Dom.q(`[name="view"]`).addEventListener('click', async(e)=>{
+        Dom.q(`[name="book"]`).innerHTML = '';
         console.log(Dom.q(`[name="manuscript"]`).value);
-        parser.text = Dom.q(`[name="manuscript"]`).value;
+        parser.manuscript = Dom.q(`[name="manuscript"]`).value;
+        Dom.q(`[name="nowPageNum"]`).textContent = '1';
+        Dom.q(`[name="progressRate"]`).style.display = 'inline';
+        for await (let page of splitter.generateAsync()) {
+            console.log('ページ数:',page.dataset.page)
+            if ('1'==page.dataset.page) {Dom.q(`.page`).classList.add('show');await new Promise(resolve => setTimeout(resolve, 0));}
+            //if ('1'==page.dataset.page) {page.classList.add('show');await new Promise(resolve => setTimeout(resolve, 0));}
+            //if ('1'==page.dataset.page) {Dom.q(`.page:not(.dummy)`).classList.add('show');await new Promise(resolve => setTimeout(resolve, 0));}
+            //if ('1'==page.dataset.page) {page.classList.add('show');await new Promise(resolve => setTimeout(resolve, 0));}
+            Dom.q(`[name="progressRate"]`).textContent = `${parser.body.progress.rate.toFixed(100===parser.body.progress.rate ? 0 : 1)}%`;
+            Dom.q(`[name="book"]`).appendChild(page);
+            Dom.q(`[name="allPageNum"]`).textContent = `${page.dataset.page}<`;
+//            console.log('1'==page.dataset.page, '******************************')
+            //if ('1'==page.dataset.page) {page.classList.add('show');}
+            //if ('1'==page.dataset.page) {Dom.q(`.page:not(.dummy)`).classList.add('show');}
+        }
+        Dom.q(`[name="allPageNum"]`).textContent = `${Dom.q(`[name="book"] > [data-page]:last-child`).dataset.page}`;
+        Dom.q(`.page:not(.dummy)`).classList.add('show');
+        Dom.q(`[name="progressRate"]`).style.display = 'none';
+        /*
+//        console.log(parser.els);
+//        Dom.q(`[name="book"]`).append(...parser.els);
         splitter.split(parser.els);
         console.log(splitter.pages);
         Dom.q(`[name="book"]`).append(...splitter.pages);
 
-        const page = Dom.q(`:not(.dummy).page`);
-        if (page) {
-            page.classList.add('show');
-            Dom.q(`[name="nowPage"]`).textContent = '1';
-            Dom.q(`[name="allPage"]`).textContent = `${splitter.pages.length}`;
+        Dom.q(`.page`).classList.add('show');
+        Dom.q(`[name="nowPageNum"]`).textContent = '1';
+        Dom.q(`[name="allPageNum"]`).textContent = `${splitter.pages.length}`;
 
-            console.log(Css.get(`--page-inline-size`), Css.get(`--page-block-size`));
-        }
+        console.log(Css.get(`--page-inline-size`), Css.get(`--page-block-size`));
 //        Dom.q(`[name="book"]`).append(...parser.els);
 //        splitter.split(parser.els);
+        */
         /*
         console.log('view input!!');
         console.log(Dom);
@@ -39,6 +61,14 @@ window.addEventListener('DOMContentLoaded', async(event) => {
         console.log(type.value, pageTypes.get(type.value), pageTypes.get(type.value).size);
         pageTypes.get(type.value).redom(parser.els);
         */
+    });
+    Dom.q(`[name="prev"]`).addEventListener('click', async(e)=>{
+        viewer.showPrevPage();
+        Dom.q(`[name="nowPageNum"]`).textContent = viewer.nowPageNum;
+    });
+    Dom.q(`[name="next"]`).addEventListener('click', async(e)=>{
+        viewer.showNextPage();
+        Dom.q(`[name="nowPageNum"]`).textContent = viewer.nowPageNum;
     });
     /*
     type.dispatchEvent(new Event('input'));

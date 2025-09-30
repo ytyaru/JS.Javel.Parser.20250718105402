@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>JSコードをミニファイする</title>
+    <style>
+    textarea{width:300px;height:300px;}
+    </style>
+    <script src="../../../docs/lib/util/dom/dom.tags.js"></script>
+    <script src="../../../docs/lib/terser/0.7.3/source-map.js"></script>
+    <script src="../../../docs/lib/terser/0.7.3/bundle.min.js"></script>
+    <script>
+window.addEventListener('DOMContentLoaded', async(event) => {
+    //const code = "function add(first, second) { return first + second; }";
+    Dom.q(`#minify`).addEventListener('click', async(event) => {
+        const code = Dom.q(`#input`).value;
+        //const result = await minify(code, { sourceMap: true });
+        const nameCache = {};
+        const result = await terser.minify(code, {
+            sourceMap: true,
+            /*
+            module: true,
+            mangle: {properties:true},
+            toplevel: true,
+            */
+            nameCache: nameCache,
+        });
+        Dom.q(`#output`).value = result.code;
+        console.log(result.code);  // minified output: function add(n,d){return n+d}
+        console.log(result.map);  // source map
+        console.log(nameCache);
+        console.log(result.nameCache);
+    });
+});
+    </script>
+</head>
+<body>
+    <button id="minify">コードを短縮する</button>
+    <textarea id="input">
+    class Human {
+        hello() {
+            console.log('Hello JavaScript !!');
+        }
+    }
+    const human = new Human();
+    human.hello();
+    </textarea>
+    <textarea id="output"></textarea>
+</body>
+</html>
+
