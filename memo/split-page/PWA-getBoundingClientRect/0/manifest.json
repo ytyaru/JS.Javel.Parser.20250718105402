@@ -1,0 +1,53 @@
+{
+  "name": "Javel",
+  "icons": [
+    {
+      "src": "asset/image/icon/app-512.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ]
+  "description": "本のように閲覧できる小説読書アプリ。Markdownと青空文庫に似た書式のテキストを渡すと画面サイズに応じてページ分割して表示されHTMLファイルをDL可能。",
+  "categories":["books", "lifestyle", "productivity", "utilities"],
+  "display": "fullscreen",
+  "display_override": ["window-controls-overlay", "fullscreen", "standalone", "minimal-ui", "browser", "tabbed"],
+  "file_handlers": [
+    {
+      "action": "/view.html",
+      "accept": {
+        "text/plain": [".txt", ".md", ".javel", ".jvl", ".jv"],
+        "text/markdown": [".md"]
+      }
+    },
+    {
+      "action": "/make.html",
+      "accept": {
+        "text/plain": [".txt", ".md", ".javel", ".jvl", ".jv"],
+        "text/markdown": [".md"]
+      }
+    },
+    {
+      "action": "/edit.html",
+      "accept": {
+        "text/plain": [".txt", ".md", ".javel", ".jvl", ".jv"],
+        "text/markdown": [".md"]
+      }
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "desktop.webp",
+      "sizes": "1280x720",
+      "type": "image/webp"
+    }
+  ],
+  "share_target": {
+    "action": "/shared-content-receiver/",
+    "method": "GET",
+    "params": {
+      "title": "name",
+      "text": "description",
+      "url": "link"
+    }
+  }
+}
