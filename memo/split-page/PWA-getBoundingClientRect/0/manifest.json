@@ -1,12 +1,24 @@
 {
   "name": "Javel",
+  "short_name": "Javel",
   "icons": [
     {
-      "src": "asset/image/icon/app-512.png",
-      "type": "image/png",
-      "sizes": "512x512"
+      "src": "asset/image/icon/javel/512/maskable-tatami.svg",
+      "type": "image/png", "sizes": "512x512", "purpose": "maskable"
+    }, {
+      "src": "asset/image/icon/javel/512/maskable-tatami.png",
+      "type": "image/png", "sizes": "512x512", "purpose": "maskable"
+    }, {
+      "src": "asset/image/icon/javel/192/maskable-tatami.png",
+      "type": "image/png", "sizes": "192x192", "purpose": "maskable"
+    }, {
+      "src": "asset/image/icon/javel/512/monochrome.svg",
+      "type": "image/png", "sizes": "512x512", "purpose": "monochrome"
+    }, {
+      "src": "asset/image/icon/javel/512/any.svg",
+      "type": "image/png", "sizes": "512x512", "purpose": "any"
     }
-  ]
+  ],
   "description": "本のように閲覧できる小説読書アプリ。Markdownと青空文庫に似た書式のテキストを渡すと画面サイズに応じてページ分割して表示されHTMLファイルをDL可能。",
   "categories":["books", "lifestyle", "productivity", "utilities"],
   "display": "fullscreen",
