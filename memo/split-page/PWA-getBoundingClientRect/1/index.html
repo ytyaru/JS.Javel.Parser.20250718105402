@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head prefix="og: http://ogp.me/ns# fb: http://ogp.me/ns/fb# article: http://ogp.me/ns/article#">
+  <meta charset="UTF-8">
+  <title>Javel</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
+  <meta name="description" content="本のように読める小説アプリ。Markdownと青空文庫に似た書式のテキストを渡すと画面サイズに応じてページ分割して表示され、そのHTMLファイルもDL可能。">
+  <meta name="author" content="ytyaru">
+  <meta name="og:title" content="Javel">
+  <meta name="og:description" content="本のように読める小説アプリ">
+  <meta name="og:url" content="SNS用URL">
+  <meta name="og:image" content="asset/image/icon/javel/512/any.svg">
+  <meta name="og:type" content="website">
+  <meta name="og:site_name" content="Javel">
+  <meta name="og:locale" content="ja_JP">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:site" content="@ytyaru">
+  <link rel="icon" href="asset/image/icon/javel/512/any.svg">
+  <link rel="icon" rel="apple-touch-icon" href="asset/image/icon/javel/180/any.png" />
+  <link rel="manifest" href="manifest.json">
+  <link rel="stylesheet" href="/style.css">
+  <!--
+  <script src="../../../../docs/lib/js-yaml/4.1.0/min.js"></script>
+  <script src="../../../../docs/lib/util/type.js"></script>
+  <script src="../../../../docs/lib/util/string/normalize-line-breaks.js"></script>
+  <script src="../../../../docs/lib/util/string/trim.js"></script>
+  <script src="../../../../docs/lib/util/string/case.js"></script>
+  <script src="../../../../docs/lib/util/dom/dom.tags.js"></script>
+  <script src="../../../../docs/lib/util/css.js"></script>
+  <script src="../../../../docs/lib/util/string/length.js"></script>
+  <script src="../../../../docs/lib/util/promise/wait.js"></script>
+  -->
+  <script src="lib/js-yaml/4.1.0/min.js"></script>
+  <script src="lib/util/type.js"></script>
+  <script src="lib/util/string/normalize-line-breaks.js"></script>
+  <script src="lib/util/string/trim.js"></script>
+  <script src="lib/util/string/case.js"></script>
+  <script src="lib/util/dom/dom.tags.js"></script>
+  <script src="lib/util/css.js"></script>
+  <script src="lib/util/string/length.js"></script>
+  <script src="lib/util/promise/wait.js"></script>
+  <script src="parser.js"></script>
+  <script src="page-splitter.js"></script>
+  <script src="page-viewer.js"></script>
+  <script src="main.js"></script>
+  <style>
+  .status-card {
+    display:flex;justify-content:flex-start;align-items:baseline;list-style:none;
+    padding:0; margin:0;
+  }
+  .status-card > li {
+    font-family: 'Noto Sans JP', 'Source Han Sans JP', 'Noto Color Emoji', sans-serif;
+    font-size: 1em;
+    padding: 0.25em;
+    /*
+    font-size: 0.875em;
+    padding-top: 0;
+    padding-bottom: 0;
+    */
+    border: 1px solid currentColor;
+    border-radius: 0.5em;
+    margin-right: 0.25em;
+    margin-top: 0em;
+  }
+  .status-card > li > a {display:block;}
+  </style>
+</head>
+<body>
+    <div name="aboutScreen">
+        <div style="display:flex;justify-content:flex-start;gap:1em;align-items:baseline;padding:0;margin:0;"><h1 style="padding:0;margin:0;">Javel</h1><p style="padding:0;margin:0;">本のように読める小説アプリ</p><a href="" target="_blank" rel="noopener noreferer" target="github">🐙</a></div>
+        <ul style="padding-left:0em;list-style:none;">
+            <li><input type="checkbox" disabled checked><span>25% </span>ページ分割する（PC/スマホ対応）</li>
+            <li><input type="checkbox" disabled checked><span>25% </span>簡易記法で執筆できる（Markdown、青空文庫のような）</li>
+            <li><input type="checkbox" disabled ><span>15% </span>ファイル入出力できる</li>
+            <li><input type="checkbox" disabled ><span>15% </span>公開・収集できる（BlueTooth、WebAPI（GitHub、AT-Protocol））</li>
+            <li><input type="checkbox" disabled ><span>10% </span>小説投稿サイト対応（なろう、カクヨム、アルファポリス等）</li>
+            <li><input type="checkbox" disabled ><span> 5% </span>SNS対応（X、BlueSky、Mastodon、Misskey等）</li>
+            <li><input type="checkbox" disabled ><span> 5% </span>投げ銭（暗号通貨（モナコイン、ビットコイン等））</li>
+        </ul>
+        <ul class="status-card"><li>🪙永久無料</li><li>🪪登録不要</li><li>🗽改変自由</li><li> ¥⃝営利排除</li><li>✒️創作目的</li></ul>
+    </div>
+    <div name="editScreen">
+    </div>
+    <div name="progressScreen">
+    </div>
+    <div name="viewScreen">
+    </div>
+
+  <button name="view">閲覧する
+  <button name="prev">前</button><span name="nowPageNum"></span>/<span name="allPageNum"></span><button name="next">次</button></button><span name="progressRate"></span>
+  <textarea name="manuscript" style="width:100%;">
+---
+title: 作品タイトル
+catch: 作品キャッチコピー
+obi: |-
+    この作品の帯文。売り文句。200字以内。
+
+    Javel形式で表記《ひょうき》できる。
+    複数の段落にできる。段落内改行も可能。
+author:
+  name: 著者名
+---
+
+# 主題
+
+## 副題
+
+### キャッチコピー（メインコピー）
+
+#### サブコピー
+
+##### 囲み
+
+###### サブコピー２
+
+＠著者名
+0版
+
+# 一部
+
+## 一章
+
+### 一節
+
+#### 一項
+
+##### 一目
+
+　本文。
+
+　次のパラグラフ。
+　パラグラフ内改行。
+
+　漢字《かんじ》、《《傍点》》、〔割注〕
+
+　｜ひらがな《非漢字》にもルビを入力できる。｜ABC《ほらね》。普通《フツウ》ルビ文字はカタカナで表記する。ルビ文字は小さいため画数が多いと潰れて見えなくなるから。ひらがなでも十分読めるなら違和感も少なく良いだろう。
+
+# 二部
+
+## 一章
+
+　本文です。
+
+# Javel
+
+　Javelはマークダウン風テキストからHTMLを生成するアプリです。
+
+　小説に特化した簡易構文なので簡単に書けます。
+
+　できれば画面サイズに応じたページ分割機能を実装したい所。
+
+　１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０
+
+　１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０
+
+　１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０
+
+　１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０
+
+　１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０
+
+　あああああああああああいいいいいいいいいい
+　あああああああああああいいいいいいいいいい
+
+　うううううううううううううううううううううううううううううううううううううううううううううううううううううううううううううううううううううううううううううううううううううううううううう
+
+　ええええええええ
+
+　おおおおおおおおおおおおおおおおおおおおおおおおおおおおおおおおおおおおおおおおおおおおおおおおおおおおおおおおおおおおおおおおおおおおおおおおおおおおおおおおおおおおおおおおおおおおおおおおおおおおおおお
+
+　かあああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああ
+
+　きいいいいいいいいいいいいい
+
+　この辺りの文章で長さを調整する予定ですが、如何でしょうか？　足りますか？　単語区切りにしたいですが、どうですか？
+
+　くうううううううううううううううううううううううううううううううううううううううううううううううううううううううううううううううううううううううううううううううううううううううううう
+
+　けええええええええええええええええ
+
+　もし一ブロックあたりのサイズが一画面サイズを超過していたら？　巻物やスライドはページ分割しないが、小説はページ分割する。
+
+　１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０
+
+　終わり。
+  </textarea>
+  <div name="book"></div>
+</body>
+</html>
