@@ -1,10 +1,25 @@
 <!DOCTYPE html>
-<html>
-<head lang="ja">
+<html lang="ja">
+<head prefix="og: http://ogp.me/ns# fb: http://ogp.me/ns/fb# article: http://ogp.me/ns/article#">
   <meta charset="UTF-8">
-  <title>ページ分割 getBoundingClientRect()</title>
+  <title>Javel</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
+  <meta name="description" content="本のように読める小説アプリ。Markdownと青空文庫に似た書式のテキストを渡すと画面サイズに応じてページ分割して表示され、そのHTMLファイルもDL可能。">
+  <meta name="author" content="ytyaru">
+  <meta name="og:title" content="Javel">
+  <meta name="og:description" content="本のように読める小説アプリ">
+  <meta name="og:url" content="SNS用URL">
+  <meta name="og:image" content="asset/image/icon/javel/512/any.svg">
+  <meta name="og:type" content="website">
+  <meta name="og:site_name" content="Javel">
+  <meta name="og:locale" content="ja_JP">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:site" content="@ytyaru">
+  <link rel="icon" href="asset/image/icon/javel/512/any.svg">
+  <link rel="icon" rel="apple-touch-icon" href="asset/image/icon/javel/180/any.png" />
   <link rel="manifest" href="manifest.json">
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="/style.css">
+  <!--
   <script src="../../../../docs/lib/js-yaml/4.1.0/min.js"></script>
   <script src="../../../../docs/lib/util/type.js"></script>
   <script src="../../../../docs/lib/util/string/normalize-line-breaks.js"></script>
@@ -14,13 +29,23 @@
   <script src="../../../../docs/lib/util/css.js"></script>
   <script src="../../../../docs/lib/util/string/length.js"></script>
   <script src="../../../../docs/lib/util/promise/wait.js"></script>
+  -->
+  <script src="lib/js-yaml/4.1.0/min.js"></script>
+  <script src="lib/util/type.js"></script>
+  <script src="lib/util/string/normalize-line-breaks.js"></script>
+  <script src="lib/util/string/trim.js"></script>
+  <script src="lib/util/string/case.js"></script>
+  <script src="lib/util/dom/dom.tags.js"></script>
+  <script src="lib/util/css.js"></script>
+  <script src="lib/util/string/length.js"></script>
+  <script src="lib/util/promise/wait.js"></script>
   <script src="parser.js"></script>
   <script src="page-splitter.js"></script>
   <script src="page-viewer.js"></script>
   <script src="main.js"></script>
 </head>
 <body>
-  <h1>ページ分割 getBoundingClientRect()</h1>
+  <h1>Javel</h1>
   <button name="view">閲覧する
   <button name="prev">前</button><span name="nowPageNum"></span>/<span name="allPageNum"></span><button name="next">次</button></button><span name="progressRate"></span>
   <textarea name="manuscript" style="width:100%;">
