@@ -49,6 +49,7 @@
     padding:0; margin:0;
   }
   .status-card > li {
+    display:flex;justify-content:flex-start;align-items:center;list-style:none;
     font-family: 'Noto Sans JP', 'Source Han Sans JP', 'Noto Color Emoji', sans-serif;
     font-size: 1em;
     padding: 0.25em;
@@ -61,11 +62,75 @@
     border-radius: 0.5em;
     margin-right: 0.25em;
     margin-top: 0em;
+    width: fit-content;
+    height: 48px;
   }
   .status-card > li > a {display:block;}
+  .status-card > li i {font-style:normal; font-size:2em;}
+  .overlay {position:relative;display:inline-block;padding:0;margin:0;box-sizing:border-box;}
+  .overlay i:nth-child(2) {position:absolute; top:0; left:0;}
+
+  .status-card-header {
+    display:flex;justify-content:flex-start;align-items:baseline;list-style:none;
+    padding:0; margin:0;
+  }
+  .status-card-header > li > a {display:block;}
+  .status-card-header > li i {font-style:normal; font-size:2em; padding:0; margin:0;}
+  .status-card-header > li {
+    display:flex;justify-content:flex-start;align-items:center;list-style:none;
+    font-family: 'Noto Sans JP', 'Source Han Sans JP', 'Noto Color Emoji', sans-serif;
+    font-size: 1em;
+    padding: 0.25em;
+    padding-inline-start: 0;
+    /*
+    border: 1px solid currentColor;
+    border-radius: 0.5em;
+    */
+    border-inline-end: 1px solid currentColor;
+    margin-right: 0.25em;
+    margin-top: 0em;
+    /*
+    width: fit-content;
+    height: 48px;
+    */
+  }
+  .status-card-header > li:last-child {
+    display:flex;justify-content:flex-start;align-items:center;list-style:none;
+    font-family: 'Noto Sans JP', 'Source Han Sans JP', 'Noto Color Emoji', sans-serif;
+    font-size: 1em;
+    padding: 0.25em;
+    border-inline-end: none;
+    margin-right: 0.25em;
+    margin-top: 0em;
+    /*
+    width: fit-content;
+    height: 48px;
+    */
+  }
   </style>
 </head>
 <body>
+<svg style="display: none;" xmlns="http://www.w3.org/2000/svg">
+  <symbol id="icon-zero-yen" viewBox="0 0 512 512">
+    <path d="M256.453 0h-68.824l-59.188 175.338L69.277 0H.453l69.43 205.723H10.658v77.951H92.05v50.804H10.657v77.931H92.05V512h72.794v-99.591h81.392v-77.931h-81.392v-50.804h81.392v-77.951h-59.214Z"/><path d="M336.56 411.04q18.36 20.4 44.2 20.4t44.2-20.4q17-19.04 27.88-59.84 10.2-38.76 10.2-95.2 0-39.44-4.76-68L314.8 370.24q9.52 26.52 21.76 40.8m115.6 36.72q-29.24 25.16-71.4 25.16t-71.4-25.16-44.2-73.44Q249.52 324 249.52 256q0-65.28 15.64-115.6 14.96-48.96 44.2-74.8 29.24-26.52 71.4-26.52t71.4 26.52q29.24 25.84 44.2 74.8Q512 190.72 512 256q0 68-15.64 118.32-14.96 48.28-44.2 73.44m-3.4-299.2q-8.84-28.56-23.8-46.24-18.36-21.76-44.2-21.76t-44.2 21.76q-17 19.72-27.88 61.2-10.2 38.76-10.2 92.48 0 43.52 6.12 77.52Z"/>
+  </symbol>
+  <symbol id="icon-home" viewBox="0 0 512 512">
+    <path d="M395.141 176.864v-130.9h-47.703v70.257l-53.375-67.874L256 0l-38.063 48.347L0 325.422l38.063 48.388 41.813-53.174V512h352.25V320.636l41.813 53.174L512 325.422ZM245.578 434.89h-54.484v-69.283h54.484Zm0-96.178h-54.484v-69.284h54.484Zm75.328 96.178h-54.484v-69.283h54.484Zm0-96.178h-54.484v-69.284h54.484Z"/>
+  </symbol>
+  <symbol id="icon-id-card" viewBox="0 0 512 512">
+    <path d="M16 75A16 16 0 0 0 0 91v330a16 16 0 0 0 16 16h480a16 16 0 0 0 16-16V91a16 16 0 0 0-16-16Zm16 32h448v298H32Z"/><path d="M174.702 117.393a63.15 63.15 0 0 0-63.153 63.152 63.15 63.15 0 0 0 63.153 63.152 63.15 63.15 0 0 0 63.152-63.152 63.15 63.15 0 0 0-63.152-63.152m0 138.607a138.6 138.6 0 0 0-69.304 18.57 138.61 138.61 0 0 0-69.304 120.037H313.31a138.61 138.61 0 0 0-69.304-120.037A138.6 138.6 0 0 0 174.702 256"/><path d="M262.519 128.136h198.39v32h-198.39zm.34 52.158h198.39v32h-198.39zm-.679 52.159h198.39v32H262.18z"/>
+  </symbol>
+  <symbol id="icon-copyleft" viewBox="0 0 512 512">
+    <path d="M114.416 223.608h68.441a78.367 78.367 0 1 1 0 65.306h-68.44a143.673 143.673 0 1 0 0-65.306M256 0C114.923 0 0 114.923 0 256s114.923 256 256 256 256-114.923 256-256S397.077 0 256 0m0 52c112.974 0 204 91.026 204 204s-91.026 204-204 204S52 368.974 52 256 143.026 52 256 52"/>
+  </symbol>
+  <symbol id="icon-open-share" viewBox="0 0 512 512">
+    <path d="M441.432 171.312c60.976-32.394 77.624-46.31 68.046-50.889-97.768-22.306-229.298-41.746-277.896 18.87-14.921 18.606-20.896 58.372-28.492 91.336-21.398-20.835-36.403-37.183-40.703-42.159-26.3-30.451-52.93-49.08-88.912-40.314-32.89 8.009-34.571 39.608-68.196 54.889-9.428 4.293-5.284 7.536 5.006 7.153 30.878-1.148 65.187 4.571 72.047 28.589 5.374 18.81 18.869 108.067 97.784 152.673 78.914 44.606 164.689 6.868 178.409 6.868 13.721 0 94.392 25.398 92.064 8.571-9.157-66.32 43.443-121.217 21.151-111.504-27.816 12.121-118.364 52.044-145.82 34.886-.323-.202-.638-.42-.961-.63 44.921-46.624 35.757-115.452 116.473-158.339"/>
+  </symbol>
+  <symbol id="icon-pen" viewBox="0 0 512 512">
+    <path d="M511.32.722c.64.683.68 5.62.68 62.69v61.928l-3.92 4.053c-2.16 2.248-21.48 21.994-42.92 43.947s-39 40.014-39.08 40.175c-.04.16 1.8 3.492 4.12 7.425 4.6 7.746 4.92 8.79 2.88 9.753-.6.28-4.76 1.765-9.2 3.29s-16.08 5.459-25.84 8.79-18.16 6.06-18.64 6.06c-.6 0-3.16-1.806-6.88-4.816-3.24-2.649-6.04-4.776-6.16-4.696-.12.04-5.08 5.499-11 12.121-56.88 63.733-108.2 120.484-125.04 138.303-5.8 6.14-6 6.301-8.44 6.984-8.76 2.448-24.24 10.194-49.68 24.803-31.48 18.1-80.16 48.562-130.12 81.432-7.36 4.816-13.8 8.87-14.36 8.99-.84.241-1.6-.36-5.76-4.535-3.76-3.772-4.76-5.017-4.76-5.86 0-.922 13.72-14.97 84.88-86.97 46.64-47.239 85.12-85.888 85.44-85.888.36 0 2.44.883 4.64 1.966 5.36 2.65 9.04 3.412 14.6 3.13 4.72-.24 7.76-1.083 12.24-3.41 4.04-2.088 9.08-7.265 11.28-11.56 3.96-7.625 4.6-15.772 1.92-23.558-2.84-8.308-9.72-14.93-18.6-17.94-3.72-1.244-11.16-1.566-15.36-.602-10.24 2.247-18.84 10.675-21.44 20.91-1.6 6.18-.88 13.284 2 19.826 1.16 2.609 1.2 2.93.68 3.733-.52.762-28.76 29.418-140.88 142.838C17 485.867 9.48 493.252 8.8 493.252c-1.08 0-8.8-7.385-8.8-8.388 0-.361 1.2-2.288 2.72-4.295 6.48-8.749 31.56-46.596 47.16-71.238 39.44-62.249 66.4-110.29 72.76-129.755.76-2.368.8-2.368 8.96-8.99 25.6-20.75 54.36-45.271 86.4-73.687 25.8-22.916 62.4-56.228 62.4-56.83 0-.12-2.92-2.609-6.48-5.458-7.6-6.06-7.92-6.341-7.92-7.345 0-.401 6.2-11.358 13.76-24.361 12.32-21.231 13.84-23.64 14.8-23.76.72-.08 3.56 1.084 8.64 3.532 4.2 2.047 7.76 3.612 8 3.532.2-.04 17.12-17.178 37.6-38.048s39.56-40.214 42.36-43.064L396.28 0h57.2c54.92 0 57.24.04 57.84.722"/></svg>
+  </symbol>
+</svg>
+
     <div name="aboutScreen">
         <div style="display:flex;justify-content:flex-start;gap:1em;align-items:baseline;padding:0;margin:0;"><h1 style="padding:0;margin:0;">Javel</h1><p style="padding:0;margin:0;">本のように読める小説アプリ</p><a href="" target="_blank" rel="noopener noreferer" target="github">🐙</a></div>
         <ul style="padding-left:0em;list-style:none;">
@@ -77,7 +142,70 @@
             <li><input type="checkbox" disabled ><span> 5% </span>SNS対応（X、BlueSky、Mastodon、Misskey等）</li>
             <li><input type="checkbox" disabled ><span> 5% </span>投げ銭（暗号通貨（モナコイン、ビットコイン等））</li>
         </ul>
-        <ul class="status-card"><li>🪙永久無料</li><li>🪪登録不要</li><li>🗽改変自由</li><li> ¥⃝営利排除</li><li>✒️創作目的</li></ul>
+        <!--<ul class="status-card"><li>🪙永久無料</li><li>🪪登録不要</li><li>🗽改変自由</li><li> ¥⃝営利排除</li><li>✒️創作目的</li></ul>-->
+        <!--
+        <ul class="status-card"><li><i>🪙</i>永久無料</li><li><i>🪪</i>登録不要</li><li><i>🗽</i>🄯改変自由</li><li><div class="overlay"><i>🪙</i><i>❌</i></div>営利排除</li><li><i>✒️</i>創作目的</li></ul>
+        -->
+        <div>
+            <div class="status-card-box" style="display:inline-block; padding:0; margin:0;">
+                <ul class="status-card-header" style="border:1px solid currentColor; border-radius:1em 1em 0 0;">
+                    <li><i>🪙</i><div style="display:flex; flex-direction:column;"><div style="flex:1;">永久無料</div><hr style="margin:0;border:none;height:1px;background-color:currentColor;" class="separator"><div style="flex:1;">支払不要</div></div></li>
+                    <li><i>🪪</i><div style="display:flex; flex-direction:column;"><div style="flex:1;">秘密保持</div><hr style="margin:0;border:none;height:1px;background-color:currentColor;" class="separator"><div style="flex:1;">登録不要</div></div></li>
+                    <li><i>🗽</i><div style="display:flex; flex-direction:column;"><div style="flex:1;">🄯改変自由</div><hr style="margin:0;border:none;height:1px;background-color:currentColor;" class="separator"><div style="flex:1;">©隠蔽排除</div></div></li>
+                    <li><i>👥</i><div style="display:flex; flex-direction:column;"><div style="flex:1;">共有拡散</div><hr style="margin:0;border:none;height:1px;background-color:currentColor;" class="separator"><div style="flex:1;">独占排除</div></div></li>
+                    <li><i>✒️</i><div style="display:flex; flex-direction:column;"><div style="flex:1;">創作目的</div><hr style="margin:0;border:none;height:1px;background-color:currentColor;" class="separator"><div style="flex:1;">営利排除</div></div></li>
+                </ul>
+            </div>
+            <br>
+            <div class="status-card-box" style="display:inline-block; padding:0; margin:0;">
+                <div class="status-card-message" style="display:flex; flex-direction:column; border:1px solid currentColor; border-radius:0 0 1em 1em;">
+                    <div style="flex:1;display:inline-block;">肯定系：ここに一文だけの簡潔明瞭な説明文を表示します。あああああああああああああああああああああああああああああああああ</div>
+                    <hr style="margin:0;border:none;height:1px;background-color:currentColor;" class="separator">
+                    <div style="flex:1;display:inline-block;">否定系：ここに一文だけの簡潔明瞭な説明文を表示します。</div>
+                </div>
+            </div>
+        </div>
+
+        <div style="padding:0; margin:0; line-height:1.5em;">
+            <div class="status-card-box" style="display:inline-block; padding:0; margin:0;">
+                <ul class="status-card-header" style="border:1px solid currentColor; border-radius:1em 1em 0 0;">
+                    <li><i><svg width="2em" height="2em" viewBox="0 0 512 512"><use href="#icon-zero-yen"></use></svg></i><div style="display:flex; flex-direction:column;"><div style="flex:1;">永久無料</div><hr style="margin:0;border:none;height:1px;background-color:currentColor;" class="separator"><div style="flex:1;">支払不要</div></div></li>
+                    <li><i><svg width="2em" height="2em" viewBox="0 0 512 512"><use href="#icon-home"></use></svg></i><div style="display:flex; flex-direction:column;"><div style="flex:1;">秘密保持</div><hr style="margin:0;border:none;height:1px;background-color:currentColor;" class="separator"><div style="flex:1;">登録不要</div></div></li>
+                    <li><i><svg width="2em" height="2em" viewBox="0 0 512 512"><use href="#icon-copyleft"></use></svg></i><div style="display:flex; flex-direction:column;"><div style="flex:1;">改変自由</div><hr style="margin:0;border:none;height:1px;background-color:currentColor;" class="separator"><div style="flex:1;">隠蔽排除</div></div></li>
+                    <li><i><svg width="2em" height="2em" viewBox="0 0 512 512"><use href="#icon-open-share"></use></svg></i><div style="display:flex; flex-direction:column;"><div style="flex:1;">共有拡散</div><hr style="margin:0;border:none;height:1px;background-color:currentColor;" class="separator"><div style="flex:1;">独占排除</div></div></li>
+                    <li><i><svg width="2em" height="2em" viewBox="0 0 512 512"><use href="#icon-pen"></use></svg></i><div style="display:flex; flex-direction:column;"><div style="flex:1;">創作目的</div><hr style="margin:0;border:none;height:1px;background-color:currentColor;" class="separator"><div style="flex:1;">営利排除</div></div></li>
+                </ul>
+            </div>
+            <br>
+            <div class="status-card-box" style="display:inline-block; padding:0; margin:0;">
+                <div class="status-card-message" style="display:flex; flex-direction:column; border:1px solid currentColor; border-radius:0 0 1em 1em;">
+                    <div style="flex:1;display:inline-block;">肯定系：ここに一文だけの簡潔明瞭な説明文を表示します。あああああああああああああああああああああああああああああああああ</div>
+                    <hr style="margin:0;border:none;height:1px;background-color:currentColor;" class="separator">
+                    <div style="flex:1;display:inline-block;">否定系：ここに一文だけの簡潔明瞭な説明文を表示します。</div>
+                </div>
+            </div>
+        </div>
+
+        <button name="view">読む</button>
+        <button name="edit">書く</button>
+        <button name="make">作る（Javelライブラリを使って自作サイトで小説を表示・編集する）</button>
+
+        <!--
+¥0⭕永久無料：共有財産として社会に還元し公益を実現します
+👛❌支払不要：金品の要求など一切しません
+
+🏠⭕秘密保持：あなたの秘密は守られます
+🪪❌登録不要：監視、検閲、個人情報要求など一切しません
+
+🗽⭕改変自由：すべてが開示され自由に使えます
+😈❌隠蔽排除：コードや下心など一切隠しません
+
+🐦⭕自由共有：仕様やコードを全て開示し、既存の仕様をなるだけ踏襲して共有しやすくします
+👑❌独裁支配：独自仕様やストア配布などにより市場独占など一切しません
+
+🖊⭕創作目的：小説の読み書きが楽しめることを最優先します
+🪙❌¥営利排除：メタクソ化の原因である利益追求を排除します
+        -->
     </div>
     <div name="editScreen">
     </div>
