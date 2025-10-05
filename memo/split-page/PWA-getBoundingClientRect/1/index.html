@@ -71,7 +71,7 @@
   .overlay i:nth-child(2) {position:absolute; top:0; left:0;}
 
   .status-card-header {
-    display:flex;justify-content:flex-start;align-items:baseline;list-style:none;
+    display:flex;flex-wrap: wrap;justify-content:flex-start;align-items:baseline;list-style:none;
     padding:0; margin:0;
   }
   .status-card-header > li > a {display:block;}
@@ -80,15 +80,21 @@
     display:flex;justify-content:flex-start;align-items:center;list-style:none;
     font-family: 'Noto Sans JP', 'Source Han Sans JP', 'Noto Color Emoji', sans-serif;
     font-size: 1em;
-    padding: 0.25em;
+    /*padding: 0.25em;*/
     padding-inline-start: 0;
-    /*
     border: 1px solid currentColor;
     border-radius: 0.5em;
+    /*
     */
+    /*
+    border-block-end: 1px solid currentColor;
     border-inline-end: 1px solid currentColor;
+    */
+    /*
     margin-right: 0.25em;
     margin-top: 0em;
+    */
+    margin:0;
     /*
     width: fit-content;
     height: 48px;
@@ -111,6 +117,50 @@
 </head>
 <body>
 <svg style="display: none;" xmlns="http://www.w3.org/2000/svg">
+  <symbol id="icon-page" viewBox="0 0 512 512">
+    <path d="M115.47 41.557V166H16v330h480V166H233.852zM16 165.11v330h480v-330H233.85c5.14 7.095 15.047 12.285 16.925 20.685v286.17L115.473 329.732V165.11z" style="fill:none;stroke-width:32;stroke:currentColor;"/>
+  </symbol>
+  <symbol id="icon-code" viewBox="0 0 512 512">
+    <path d="m156.416 319.62-144.84-84.66c1.115-5.432-2.276-13.582 1.762-17.25l142.058-74.89v24.14l-117.98 60.18 119 66.64zM211.496 349.88l-20.06-9.86 106.42-230.52 20.4 10.54zM353.276 319.62v-25.84l118.66-66.64-117.98-60.18v-24.14l144.16 75.82c-1.088 5.479 2.22 13.482-1.72 17.325z"/>
+  </symbol>
+  <symbol id="icon-file-io" viewBox="0 0 512 512">
+    <path d="M512 256 381.191 37.344v121.37H183.92V37.345L53.11 256l130.81 218.656v-121.37h197.27v121.37ZM116.398 512H0v-32h116.398Zm0-480H0V0h116.398ZM32 0v512H0V0Z" fill="currentColor"/>
+  </symbol>
+  <symbol id="icon-network-io" viewBox="0 0 512 512">
+    <path d="M256 0 37.344 130.809h121.37V328.08H37.345L256 458.89 474.656 328.08h-121.37V130.81h121.37zm256 395.602V512h-32V395.602zm-480 0V512H0V395.602zM0 480h512v32H0z" fill="currentColor"/>
+  </symbol>
+  <symbol id="icon-novel-site-support" viewBox="0 0 512 512">
+  </symbol>
+  <symbol id="icon-sns-support" viewBox="0 0 512 512">
+  </symbol>
+  <symbol id="icon-tipping-support" viewBox="0 0 512 512">
+  </symbol>
+  <symbol id="icon-external-link" viewBox="0 0 512 512">
+    <path d="M15.66 47.748v444.504h448.68V271.699h-32v188.553H47.66V79.748h195.012v-32zM512 33.941 299.868 246.073l-33.941-33.941L478.059 0zM512 0v216h-48V0zM296 0h216v48H296z" fill="currentColor"/>
+  </symbol>
+  <symbol id="icon-speech-bubble-twin" viewBox="0 0 512 512">
+<path d="M492.092 370.848c29.831-39.456 25.014-98.569-9.2-133.832-64.197-69.343-189.67-67.837-250.718 4.912-31.438 36.271-33.284 93.773-3.172 131.476 28.712 40.205 78.532 53.002 122.843 67.835 41.237 13.118 83.93 21.054 126.986 24.96l-26.312-58.804c15.323-9.545 29.148-21.741 39.573-36.547m-63.636 18.509c-9.948 2.928-13.877 7.976-6.846 16.882l11.732 26.223c-49.92-9.014-99.02-23.85-145.298-44.55-36.157-17.863-63.594-60.694-49.356-101.29 18.452-52.096 78.988-75.892 130.768-72.302 48.536 2.439 102.332 30.454 113.451 81.339 8.365 39.875-20.053 77.015-54.451 93.698M96.01 396.095l25.617-57.286c-46.562-20.739-89.415-61.588-93.507-114.92-5.19-56.088 35.882-105.524 84.332-128.325 77.932-37.854 181.454-27.716 243.614 35.2 13.001 10.113 19.88 31.947 29.627 39.919l23.17-9.642c-30.71-72.214-110.479-111.853-186.018-114.93-80.671-4.449-169.523 31.02-207.781 105.65-27.588 52.11-15.725 119.146 24.149 161.546 9.472 17.957 41.892 26.617 44.354 42.652l-32.956 73.685a806.2 806.2 0 0 0 161.643-31.922l-7.968-26.574c-35.503 10.626-71.635 19.296-108.276 24.947" style="fill:currentColor"/>
+  </symbol>
+  <symbol id="icon-bitcoin" viewBox="0 0 512 512">
+    <path d="M305.938 253c9.344-3.625 19.813-14.188 22.938-17.922s5.438-7.75 6.922-12.047 2.234-8.781 2.234-13.484c0-8.203-1.5-15.594-4.469-22.141-2.984-6.547-7.828-11.906-14.063-16.734-11.156-8.656-27.344-12.781-40.469-13.891v-28.125h-24.297v27.75l-22.016-.063v-27.688h-24.281v27.609h-44.219v22.078c0 4.781-.359 7.656 4.609 8.656.422.078 1.063.188 1.875.313.813.141 10.531.453 12.688.75 3.328.469 5.766 2.234 5.766 6.75v119.797c0 3.719-1.844 7.406-5.766 7.406-2.172 0-11.875.594-12.688.734q-1.22.21-1.875.328c-4.969.984-4.609 3.875-4.609 8.641v24.656h44.219v26.953h24.281v-26.953h22.016v26.953h24.297V356.17c9-.5 18.641-1.891 26.313-4.219 9.734-2.953 15.406-7.047 22.047-12.25 6.656-5.219 11.703-11.422 15.188-18.625 3.484-7.188 5.203-15.031 5.203-23.516-.001-23.529-13.313-39.607-41.844-44.56m-71.875-61.281h19.688c10.406 0 18.031 1.719 22.922 5.125 4.875 3.391 7.328 9.109 7.328 17.125 0 7.75-2.719 13.391-8.156 16.938-5.406 3.547-13.344 5.344-23.797 5.344h-17.984Zm55.062 114.344c-1.031 2.844-2.719 5.328-5.031 7.469q-3.492 3.188-9.281 5.109c-5.789 1.921-8.656 1.922-14.375 1.922h-25.516v-45.156h25.406c5.422 0 10.031.484 13.859 1.484 3.813 1 6.938 2.422 9.375 4.313 2.469 1.875 4.25 4.156 5.406 6.813 1.141 2.672 1.703 5.672 1.703 9 .001 3.186-.515 6.217-1.546 9.046M256 0C114.625 0 0 114.625 0 256c0 141.391 114.625 256 256 256s256-114.609 256-256C512 114.625 397.375 0 256 0m0 448c-105.859 0-192-86.141-192-192 0-105.875 86.141-192 192-192 105.875 0 192 86.125 192 192 0 105.859-86.125 192-192 192" fill="currentColor"/>
+  </symbol>
+  <symbol id="icon-" viewBox="0 0 512 512">
+  </symbol>
+  <symbol id="icon-" viewBox="0 0 512 512">
+  </symbol>
+  <symbol id="icon-" viewBox="0 0 512 512">
+  </symbol>
+  <symbol id="icon-" viewBox="0 0 512 512">
+  </symbol>
+
+
+
+
+
+
+  <symbol id="icon-contribution" viewBox="0 0 512 512">
+    <path d="M480.006 206.4c-29.31.363-40.73 32.898-46.183 56.75-1.085 22.767-18.686-15.73-35.206-2.152-23.64 14.297-37.579 41.094-57.951 59.693-20.548 23.286-43.361 44.554-62.607 68.987L280.096 512h120.543v-36.734c20.801-12.775 44.43-23.41 63.667-37.369 15.855-64.45 31.791-128.884 47.596-193.344 3.486-19.24-12.246-38.436-31.896-38.153m-3.266 12.07c25.962-2.597 26.475 27.853 18.21 44.852l-41.409 168.1-64.902 36.857V500h-96.74l-1.77-106.105c33.858-38.834 70.133-75.513 103.869-114.465 28.684-27.475 37.413 28.733 18.461 44.577-13.71 17.543-26.897 35.56-40.355 53.327 15.875 19.453 24.086-20.092 36.782-27.037 17.383-16.992 26.508-38.434 29.4-62.046 10.89-21.714 9.274-56.936 35.272-69.085ZM31.994 206.4c-24.47-.648-38.557 27.338-29.427 48.301l45.474 184.604c20.682 12.717 44.743 23.468 63.32 37.41V512h120.543l2.037-122.322c-33.532-39.817-71.017-76.124-104.615-115.908-10.347-23.672-43.75-10.512-49.098-3.352-6.515-24.91-14.47-60.162-45.1-63.907Zm3.266 12.07c26.743 7.54 26.584 41.13 35.752 62.537 7.936 18.23 5.518 42.87 23.05 57.675 13.946 10.158 25.165 46.208 40.884 42.388 11.225-4.055-3.525-11.767-5.534-17.684-14.954-22.393-37.863-41.628-40.28-69.928-1.94-32.347 32.7-21.54 41.503-.346 28.939 34.922 62.026 66.115 91.236 100.783L220.101 500h-96.74v-31.72c-21.451-12.981-45.326-24.128-65.249-38.266L11.965 242.678c-2.805-13.675 9.679-26.233 23.295-24.207M327.01-.323c-28.773.939-56.615 16.97-70.914 42.129C234.222 4.612 184.157-11.047 145.032 7.48 97.669 27.964 76.37 84.85 87.106 133.39c11.206 60.17 60.294 103.293 102.88 140.91 24.588 20.788 48.666 43.93 60.373 74.64 3.74 14.158 7.754 8.953 11.848-1.935 22.355-51.913 74.914-79.585 110.832-120.65 41.857-41.548 68.399-105.673 46.62-163.576-14.054-37.27-52.479-64.557-92.65-63.103M182.662 27.607c33.49-3.274 51.558 32.772 63.785 52.56 10.68-.892 26.73 6.496 26.603-10.328 9.597-28.1 39.802-48.734 69.626-40.467 33.364 7.17 56.869 39.319 56.781 72.912 2.247 56.096-38.362 101.027-78.244 135.25-23.125 19.906-47.257 39.35-65.09 64.413-41.316-53.378-107.848-86.409-134.79-151.04-17.46-38.588-9.977-91.6 28.658-114.479 9.8-6.052 21.241-8.693 32.671-8.82"/>
+  </symbol>
   <symbol id="icon-zero-yen" viewBox="0 0 512 512">
     <path d="M256.453 0h-68.824l-59.188 175.338L69.277 0H.453l69.43 205.723H10.658v77.951H92.05v50.804H10.657v77.931H92.05V512h72.794v-99.591h81.392v-77.931h-81.392v-50.804h81.392v-77.951h-59.214Z"/><path d="M336.56 411.04q18.36 20.4 44.2 20.4t44.2-20.4q17-19.04 27.88-59.84 10.2-38.76 10.2-95.2 0-39.44-4.76-68L314.8 370.24q9.52 26.52 21.76 40.8m115.6 36.72q-29.24 25.16-71.4 25.16t-71.4-25.16-44.2-73.44Q249.52 324 249.52 256q0-65.28 15.64-115.6 14.96-48.96 44.2-74.8 29.24-26.52 71.4-26.52t71.4 26.52q29.24 25.84 44.2 74.8Q512 190.72 512 256q0 68-15.64 118.32-14.96 48.28-44.2 73.44m-3.4-299.2q-8.84-28.56-23.8-46.24-18.36-21.76-44.2-21.76t-44.2 21.76q-17 19.72-27.88 61.2-10.2 38.76-10.2 92.48 0 43.52 6.12 77.52Z"/>
   </symbol>
@@ -142,10 +192,37 @@
             <li><input type="checkbox" disabled ><span> 5% </span>SNS対応（X、BlueSky、Mastodon、Misskey等）</li>
             <li><input type="checkbox" disabled ><span> 5% </span>投げ銭（暗号通貨（モナコイン、ビットコイン等））</li>
         </ul>
+
+        <div style="padding:0; margin:0; line-height:1.5em;">
+            <div class="status-card-box" style="display:inline-block; padding:0; margin:0;">
+                <ul class="status-card-header" style="border:1px solid currentColor; border-radius:1em 1em 0 0;">
+                    <li><i><svg width="2em" height="2em" viewBox="0 0 512 512"><use href="#icon-page"></use></svg></i><div style="display:flex; flex-direction:column;"><div style="flex:1;">ページ分割</div><hr style="margin:0;border:none;height:1px;background-color:currentColor;" class="separator"><div style="flex:1;">PC/スマホ対応</div></div></li>
+                    <li><i><svg width="2em" height="2em" viewBox="0 0 512 512"><use href="#icon-code"></use></svg></i><div style="display:flex; flex-direction:column;"><div style="flex:1;">簡易記法</div><hr style="margin:0;border:none;height:1px;background-color:currentColor;" class="separator"><div style="flex:1;">Markdown/青空文庫風</div></div></li>
+                    <li><i><svg width="2em" height="2em" viewBox="0 0 512 512"><use href="#icon-code"></use></svg></i><div style="display:flex; flex-direction:column;"><div style="flex:1;">API/ライブラリ</div><hr style="margin:0;border:none;height:1px;background-color:currentColor;" class="separator"><div style="flex:1;">Javelパーサ</div></div></li>
+                    <li><i><svg width="2em" height="2em" viewBox="0 0 512 512"><use href="#icon-file-io"></use></svg></i><div style="display:flex; flex-direction:column;"><div style="flex:1;">ファイル入出力</div><hr style="margin:0;border:none;height:1px;background-color:currentColor;" class="separator"><div style="flex:1;">Javel/HTML</div></div></li>
+                    <li><i><svg width="2em" height="2em" viewBox="0 0 512 512"><use href="#icon-network-io"></use></svg></i><div style="display:flex; flex-direction:column;"><div style="flex:1;">公開・収集</div><hr style="margin:0;border:none;height:1px;background-color:currentColor;" class="separator"><div style="flex:1;">WebAPI/BlueTooth</div></div></li>
+                    <li><i><svg width="2em" height="2em" viewBox="0 0 512 512"><use href="#icon-external-link"></use></svg></i><div style="display:flex; flex-direction:column;"><div style="flex:1;">小説投稿サイト対応</div><hr style="margin:0;border:none;height:1px;background-color:currentColor;" class="separator"><div style="flex:1;">なろう／カクヨム／AP等</div></div></li>
+                    <li><i><svg width="2em" height="2em" viewBox="0 0 512 512"><use href="#icon-speech-bubble-twin"></use></svg></i><div style="display:flex; flex-direction:column;"><div style="flex:1;">SNS対応</div><hr style="margin:0;border:none;height:1px;background-color:currentColor;" class="separator"><div style="flex:1;">X/BlueSky/Mastodon/Misskey等</div></div></li>
+                    <li><i><svg width="2em" height="2em" viewBox="0 0 512 512"><use href="#icon-bitcoin"></use></svg></i><div style="display:flex; flex-direction:column;"><div style="flex:1;">投げ銭</div><hr style="margin:0;border:none;height:1px;background-color:currentColor;" class="separator"><div style="flex:1;">MONA/BTC等</div></div></li>
+                </ul>
+            </div>
+            <br>
+            <div class="status-card-box" style="display:inline-block; padding:0; margin:0;">
+                <div class="status-card-message" style="display:flex; flex-direction:column; border:1px solid currentColor; border-radius:0 0 1em 1em;">
+                    <div style="flex:1;display:inline-block;">肯定系：ここに一文だけの簡潔明瞭な説明文を表示します。あああああああああああああああああああああああああああああああああ</div>
+                    <hr style="margin:0;border:none;height:1px;background-color:currentColor;" class="separator">
+                    <div style="flex:1;display:inline-block;">否定系：ここに一文だけの簡潔明瞭な説明文を表示します。</div>
+                </div>
+            </div>
+        </div>
+
+
+
         <!--<ul class="status-card"><li>🪙永久無料</li><li>🪪登録不要</li><li>🗽改変自由</li><li> ¥⃝営利排除</li><li>✒️創作目的</li></ul>-->
         <!--
         <ul class="status-card"><li><i>🪙</i>永久無料</li><li><i>🪪</i>登録不要</li><li><i>🗽</i>🄯改変自由</li><li><div class="overlay"><i>🪙</i><i>❌</i></div>営利排除</li><li><i>✒️</i>創作目的</li></ul>
         -->
+        <!--
         <div>
             <div class="status-card-box" style="display:inline-block; padding:0; margin:0;">
                 <ul class="status-card-header" style="border:1px solid currentColor; border-radius:1em 1em 0 0;">
@@ -165,10 +242,11 @@
                 </div>
             </div>
         </div>
-
+        -->
         <div style="padding:0; margin:0; line-height:1.5em;">
             <div class="status-card-box" style="display:inline-block; padding:0; margin:0;">
                 <ul class="status-card-header" style="border:1px solid currentColor; border-radius:1em 1em 0 0;">
+                    <li><i><svg width="2em" height="2em" viewBox="0 0 512 512"><use href="#icon-contribution"></use></svg></i><div style="display:flex; flex-direction:column;"><div style="flex:1;">公益追求</div><hr style="margin:0;border:none;height:1px;background-color:currentColor;" class="separator"><div style="flex:1;">私益排除</div></div></li>
                     <li><i><svg width="2em" height="2em" viewBox="0 0 512 512"><use href="#icon-zero-yen"></use></svg></i><div style="display:flex; flex-direction:column;"><div style="flex:1;">永久無料</div><hr style="margin:0;border:none;height:1px;background-color:currentColor;" class="separator"><div style="flex:1;">支払不要</div></div></li>
                     <li><i><svg width="2em" height="2em" viewBox="0 0 512 512"><use href="#icon-home"></use></svg></i><div style="display:flex; flex-direction:column;"><div style="flex:1;">秘密保持</div><hr style="margin:0;border:none;height:1px;background-color:currentColor;" class="separator"><div style="flex:1;">登録不要</div></div></li>
                     <li><i><svg width="2em" height="2em" viewBox="0 0 512 512"><use href="#icon-copyleft"></use></svg></i><div style="display:flex; flex-direction:column;"><div style="flex:1;">改変自由</div><hr style="margin:0;border:none;height:1px;background-color:currentColor;" class="separator"><div style="flex:1;">隠蔽排除</div></div></li>
