@@ -113,6 +113,16 @@
     height: 48px;
   }
     */
+  [name="demo"] {
+    display:flex;justify-content:flex-start;align-items:center;list-style:none;
+  }
+  [name="demo"] > div, [name="demo"] > textarea {flex-basis: 100%;}/* 640px 以下 に適用される*/
+  @media screen and (min-width: 640px) {/* 640px以上に適用されるCSS（タブレット用） */
+    [name="demo"] > div, [name="demo"] > textarea {flex-basis: calc(100% / 2);}
+  }
+  @media screen and (min-width: 960px) {/* 960px以上に適用されるCSS（PC用） */
+    [name="demo"] > div, [name="demo"] > textarea {flex-basis: calc(100% / 3);}
+  }
   </style>
 </head>
 <body>
@@ -359,9 +369,15 @@
             </div>
         </div>
 
-        <button name="view">読む</button>
-        <button name="edit">書く</button>
-        <button name="make">作る（Javelライブラリを使って自作サイトで小説を表示・編集する）</button>
+        <div name="demo">
+            <div name="demo-view">表示領域</div>
+            <textarea name="demo-edit"></textarea>
+            <div name="demo-make"><button>なろう形式</button><button>カクヨム形式</button></div>
+        </div>
+
+        <button name="some-view">読む</button>
+        <button name="some-edit">書く</button>
+        <button name="some-make">作る（Javelライブラリを使って自作サイトで小説を表示・編集する）</button>
 
         <!--
 ¥0⭕永久無料：共有財産として社会に還元し公益を実現します
@@ -387,7 +403,7 @@
     <div name="viewScreen">
     </div>
 
-  <button name="view">閲覧する
+  <button name="view">閲覧する</button>
   <button name="prev">前</button><span name="nowPageNum"></span>/<span name="allPageNum"></span><button name="next">次</button></button><span name="progressRate"></span>
   <textarea name="manuscript" style="width:100%;">
 ---
