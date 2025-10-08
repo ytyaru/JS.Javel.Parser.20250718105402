@@ -5,6 +5,7 @@ if ('serviceWorker' in navigator) {navigator.serviceWorker.register('sw.js').the
 );} else {console.error("Service workers are not supported.");}
 window.addEventListener('DOMContentLoaded', async(event) => {
     console.log('DOMContentLoaded!!');
+    const installButton = new InstallButton();
     const parser = new JavelParser();
     const splitter = new PageSplitter(parser);
     const viewer = new PageViewer();

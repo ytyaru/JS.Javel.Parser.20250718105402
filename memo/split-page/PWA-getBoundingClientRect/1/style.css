@@ -54,3 +54,4 @@ em {
 }
 .page.show {display: block;}
 /*.page.dummy {display: block;}*/
+button[name="install"] {width:100%; height:100%;}
