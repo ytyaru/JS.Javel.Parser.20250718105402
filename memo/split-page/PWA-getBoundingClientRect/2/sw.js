@@ -21,6 +21,9 @@ const APP_STATIC_RESOURCES = [
 "lib/util/string/trim.js",
 "lib/util/string/case.js",
 "lib/util/string/length.js",
+"lib/util/event/listener.js",
+
+"asset/javel/intro.jv",
 
 "asset/image/icon/javel/512/any.svg",
 ];

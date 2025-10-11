@@ -28,11 +28,13 @@
   <script src="lib/util/css.js"></script>
   <script src="lib/util/string/length.js"></script>
   <script src="lib/util/promise/wait.js"></script>
+  <script src="lib/util/event/listener.js"></script>
   <script src="parser.js"></script>
   <script src="page-splitter.js"></script>
   <script src="page-viewer.js"></script>
   <script src="install-button.js"></script>
   <script src="app-header.js"></script>
+  <script src="demo.js"></script>
   <script src="main.js"></script>
   <style>
   .status-card {
@@ -56,10 +58,18 @@
   }
   hr.separator {margin:0;border:none;height:1px;background-color:currentColor;}
   .tip-card {display:flex; justify-content:center; align-items:center; border:1px solid currentColor; box-sizing:border-box; font-family:monoscape; line-height:1em; padding:0 0.25em 0 0.25em; margin:0;}
+
+    /* 640未満,640以上 */
   [name="demo"] {display:flex;justify-content:flex-start;align-items:center;list-style:none;}
-  [name="demo"] > div, [name="demo"] > textarea {flex-basis: 100%;}/* 640px 以下 に適用される*/
-  @media screen and (min-width: 640px) {[name="demo"] > div, [name="demo"] > textarea {flex-basis: calc(100% / 2);}}/* 640px以上に適用されるCSS（タブレット用） */
-  @media screen and (min-width: 960px) {[name="demo"] > div, [name="demo"] > textarea {flex-basis: calc(100% / 3);}}/* 960px以上に適用されるCSS（PC用） */
+  [name="demo"] > div, [name="demo"] > textarea {flex-basis:100%; height:auto; aspect-ratio:4/3;}/* 640px 以下 に適用される*/
+  @media screen and (min-width: 640px) {[name="demo"] > div, [name="demo"] > textarea {flex-basis:calc(100% / 2);}}/* 640px以上に適用されるCSS（タブレット用） */
+    /* 640未満,640以上,960以上 */
+    /*
+  [name="demo"] {display:flex;justify-content:flex-start;align-items:center;list-style:none;}
+  [name="demo"] > div, [name="demo"] > textarea {flex-basis: 100%;}
+  @media screen and (min-width: 640px) {[name="demo"] > div, [name="demo"] > textarea {flex-basis: calc(100% / 2);}}
+  @media screen and (min-width: 960px) {[name="demo"] > div, [name="demo"] > textarea {flex-basis: calc(100% / 3);}}
+  */
   </style>
 </head>
 <body>
@@ -309,18 +319,19 @@
             </div>
         </div>
 
-        <div name="demo">
-            <div name="demo-view">表示領域</div>
-            <textarea name="demo-edit"></textarea>
-            <div name="demo-make"><button>なろう形式</button><button>カクヨム形式</button></div>
-        </div>
-
         <button name="some-view">読む</button>
         <button name="some-edit">書く</button>
-        <button name="some-output">出力</button>
+        <button name="some-output">出荷</button>
         <button name="some-convert">変換</button>
-        <button name="some-pull">引抜</button>
+        <button name="some-pull">入荷</button>
         <button name="some-api">API</button>
+
+        <div name="demo">
+            <div name="demo-view"></div>
+            <textarea name="demo-edit"></textarea>
+        </div>
+            <!--<div name="demo-make"><button>なろう形式</button><button>カクヨム形式</button></div>-->
+
 
         <!--
 ¥0⭕永久無料：共有財産として社会に還元し公益を実現します

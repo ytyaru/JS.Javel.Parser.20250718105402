@@ -10,6 +10,7 @@ window.addEventListener('DOMContentLoaded', async(event) => {
     const parser = new JavelParser();
     const splitter = new PageSplitter(parser);
     const viewer = new PageViewer();
+    const demo = new Demo(parser, splitter);
     console.log(Dom.q(`[name="view"]`))
     Dom.q(`[name="view"]`).addEventListener('click', async(e)=>{
         Dom.q(`[name="book"]`).innerHTML = '';
