@@ -61,8 +61,8 @@
 
     /* 640未満,640以上 */
   [name="demo"] {display:flex;justify-content:flex-start;align-items:center;list-style:none;}
-  [name="demo"] > div, [name="demo"] > textarea {flex-basis:100%; height:auto; aspect-ratio:4/3;}/* 640px 以下 に適用される*/
-  @media screen and (min-width: 640px) {[name="demo"] > div, [name="demo"] > textarea {flex-basis:calc(100% / 2);}}/* 640px以上に適用されるCSS（タブレット用） */
+  [name="demo"] > div, [name="demo"] > textarea {flex-basis:100%; height:auto; aspect-ratio:16/9;box-sizing:border-box;}/* 640px 以下 に適用される*/
+  @media screen and (min-width: 640px) {[name="demo"] > div, [name="demo"] > textarea {flex-basis:calc(100% / 2); height:auto; aspect-ratio:16/9;}}/* 640px以上に適用されるCSS（タブレット用） */
     /* 640未満,640以上,960以上 */
     /*
   [name="demo"] {display:flex;justify-content:flex-start;align-items:center;list-style:none;}
@@ -70,6 +70,9 @@
   @media screen and (min-width: 640px) {[name="demo"] > div, [name="demo"] > textarea {flex-basis: calc(100% / 2);}}
   @media screen and (min-width: 960px) {[name="demo"] > div, [name="demo"] > textarea {flex-basis: calc(100% / 3);}}
   */
+    [name="demo-view"] {
+        
+    }
   </style>
 </head>
 <body>
@@ -327,7 +330,7 @@
         <button name="some-api">API</button>
 
         <div name="demo">
-            <div name="demo-view"></div>
+            <div name="demo-view" tabindex="0"></div>
             <textarea name="demo-edit"></textarea>
         </div>
             <!--<div name="demo-make"><button>なろう形式</button><button>カクヨム形式</button></div>-->

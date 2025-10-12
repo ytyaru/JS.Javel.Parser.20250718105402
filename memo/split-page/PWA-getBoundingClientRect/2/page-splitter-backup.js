@@ -23,26 +23,14 @@ class PageSplitter {
             console.log('splitter.generate():', el, block, inlines);
             this._.dummy.el.appendChild(el); // ブロック要素単位（h, p）
             if (this._.dummy.without) {
-                console.log('*******generateAsync() without:', el, el.textContent);
-                const EL = el.cloneNode(true);
                 this._.dummy.el.removeChild(el);
-                console.log('*******generateAsync() without:', el, el.textContent);
-                console.log('*******generateAsync() without:', EL, EL.textContent);
-//                yield* this.#notInNewPage(); // 一文字も入らないなら新しいページを作る
-//                if (this.#isNotInChar) {yield* this.#makePage();}
                 if ('P'===el.tagName) {// もしp要素ならinline要素単位で分割し挿入する
-                    yield* this.#makePage(EL);
-//                    console.log('*******generateAsync() if:', el.textContent);
-//                    this.#makeFirstP(true, parseInt(el.dataset.bi));
-//                    yield* await this.#splitNodes([...el.childNodes], inlines, parseInt(el.dataset.bi));
-                    this.#makeFirstP(true, parseInt(EL.dataset.bi));
-                    yield* await this.#splitNodes([...EL.childNodes], inlines, parseInt(EL.dataset.bi));
+                    this.#makeFirstP(true, parseInt(el.dataset.bi));
+                    yield* await this.#splitNodes([...el.childNodes], inlines, parseInt(el.dataset.bi));
                 }
                 else {//<p>以外のBlockElement単体で画面サイズ超過するのは想定外(h1〜h6(の中にあるruby,em,br等も含めて)。<p>以外のブロック要素は全て単体で画面要素内に収まる事)
-                    console.log('*******generateAsync() else:', EL.textContent);
-                    yield* this.#makePage(EL);
-//                    console.log('*******generateAsync() else:', el.textContent);
-//                    yield* this.#makePage(el);
+                    console.log('*******generate() else:', el.textContent);
+                    yield* this.#makePage(el);
 //                    this._.jp.body.progress.now += block.length + 2;
                 }
 //            } else {this._.jp.body.progress.now += block.length + 2} //+2はTextBlockの区切り文字である二連改行\n\nの文字数
@@ -54,20 +42,6 @@ class PageSplitter {
         yield* this.#makePage();
         this._.dummy.hide();
     }
-    get #isNotInChar() {
-        const p = Dom.tags.p('あ');
-        this._.dummy.el.appendChild(p);
-        const res = this._.dummy.without;
-        this._.dummy.el.removeChild(p);
-        return res;
-    }
-    *#notInNewPage() { // 一文字も入らないなら新しいページを作る
-        console.log('XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX-------------');
-        const p = Dom.tags.p('あ');
-        this._.dummy.el.appendChild(p);
-        if (this._.dummy.without) {this._.dummy.el.removeChild(p); yield* this.#makePage();}
-        else {this._.dummy.el.removeChild(p);}
-    }
     *#makeCover() {
         this._.dummy.el.append(
             Dom.tags.h1({'data-name':'title'}, ...this._.jp.meta.el.title[0].childNodes),
@@ -78,11 +52,10 @@ class PageSplitter {
     }
     async *#splitNodes(nodes, inlines, bi=-1, si=-1) {
         let p = this.#makeFirstP(false, bi, si);
-        console.log(p, [...this._.dummy.el.childNodes], this._.dummy.el, nodes.length, nodes);
+        console.log(p, [...this._.dummy.el.childNodes], this._.dummy.el);
         let i = 0;
         for (i=0; i<nodes.length; i++) {
             p.appendChild(nodes[i]);
-            console.log(`#splitNodes():`, nodes[i].textContent);
             if (this._.dummy.without) {
                 p.removeChild(nodes[i]);
                 console.log(p.lastChild, p, [...p.childNodes], 'bi:', p.dataset.si);
@@ -155,11 +128,8 @@ class PageSplitter {
         let p = this._.dummy.el.querySelector(`p:last-child`);
         for (let i=0; i<graphemes.length; i++) {
             lastNode.textContent += graphemes[i];
-            console.log('#splitGraphemes() for:', i, graphemes[i]);
             if (this._.dummy.without) {
-                console.log('#splitGraphemes() without:', i, graphemes[i], lastNode.textContent);
                 lastNode.textContent = lastNode.textContent.slice(0, -1);
-                console.log('#splitGraphemes() without:', i, graphemes[i], lastNode.textContent);
                 if (0===p.textContent.length) {// 一文字も入らない（si=-1のはず）
                     console.assert(-1===si); // si=-1のはず
                     console.log('si:', si);
