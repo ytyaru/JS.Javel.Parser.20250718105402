@@ -9,8 +9,21 @@ window.addEventListener('DOMContentLoaded', async(event) => {
     const appHeader = new AppHeader();
     const parser = new JavelParser();
     const splitter = new PageSplitter(parser);
-    const viewer = new PageViewer();
+//    const viewer = new PageViewer();
     const demo = new Demo(parser, splitter);
+    const viewer = new JavelViewer();
+    // console.log()
+    await viewer.make({
+        javel: 'asset/javel/intro.jv',
+//        javel: Dom.q(`[name="demo-edit"]`).value,
+        viewer: Dom.q(`[name="demo-view"]`), 
+        editor: Dom.q(`[name="demo-edit"]`), 
+        writingMode:'horizontal-tb', 
+//        writingMode:'vertical-rl', 
+        width: Css.getInt('width', Dom.q(`[name="demo-edit"]`)), 
+        height: Css.getInt('height', Dom.q(`[name="demo-edit"]`))
+    });
+    /*
     console.log(Dom.q(`[name="view"]`))
     Dom.q(`[name="view"]`).addEventListener('click', async(e)=>{
         Dom.q(`[name="book"]`).innerHTML = '';
@@ -29,6 +42,8 @@ window.addEventListener('DOMContentLoaded', async(event) => {
         Dom.q(`.page:not(.dummy)`).classList.add('show');
         Dom.q(`[name="progressRate"]`).style.display = 'none';
     });
+    */
+    /*
     Dom.q(`[name="prev"]`).addEventListener('click', async(e)=>{
         viewer.showPrevPage();
         Dom.q(`[name="nowPageNum"]`).textContent = viewer.nowPageNum;
@@ -37,6 +52,7 @@ window.addEventListener('DOMContentLoaded', async(event) => {
         viewer.showNextPage();
         Dom.q(`[name="nowPageNum"]`).textContent = viewer.nowPageNum;
     });
+    */
     /*
     type.dispatchEvent(new Event('input'));
     function updatePage() {

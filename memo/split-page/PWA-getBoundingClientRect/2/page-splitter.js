@@ -25,13 +25,14 @@ class PageSplitter {
             if (this._.dummy.without) {
                 console.log('*******generateAsync() without:', el, el.textContent);
                 const EL = el.cloneNode(true);
-                this._.dummy.el.removeChild(el);
+                this._.dummy.el.removeChild(el); // なぜかDOMから削除されるだけでなく要素ごと消えてしまう！のでcloneNode(true)でコピーする。
                 console.log('*******generateAsync() without:', el, el.textContent);
                 console.log('*******generateAsync() without:', EL, EL.textContent);
+                console.log('*******generateAsync() without:', this._.dummy.el.textContent);
 //                yield* this.#notInNewPage(); // 一文字も入らないなら新しいページを作る
 //                if (this.#isNotInChar) {yield* this.#makePage();}
                 if ('P'===el.tagName) {// もしp要素ならinline要素単位で分割し挿入する
-                    yield* this.#makePage(EL);
+//                    yield* this.#makePage(EL);
 //                    console.log('*******generateAsync() if:', el.textContent);
 //                    this.#makeFirstP(true, parseInt(el.dataset.bi));
 //                    yield* await this.#splitNodes([...el.childNodes], inlines, parseInt(el.dataset.bi));
@@ -78,14 +79,23 @@ class PageSplitter {
     }
     async *#splitNodes(nodes, inlines, bi=-1, si=-1) {
         let p = this.#makeFirstP(false, bi, si);
-        console.log(p, [...this._.dummy.el.childNodes], this._.dummy.el, nodes.length, nodes);
+        console.log(p, [...this._.dummy.el.childNodes], this._.dummy.el, nodes.length, nodes, this._.dummy.el.lastElementChild.textContent);
         let i = 0;
         for (i=0; i<nodes.length; i++) {
             p.appendChild(nodes[i]);
-            console.log(`#splitNodes():`, nodes[i].textContent);
+            console.log(`#splitNodes():`);
+            console.log(nodes[i].textContent);
+            console.log(this._.dummy.el.lastElementChild.textContent);
+            console.log(p.lastChild.textContent);
             if (this._.dummy.without) {
-                p.removeChild(nodes[i]);
+                console.log(nodes[i].textContent);
+                //p.removeChild(nodes[i]); // なぜか削除できない！　TextNodeだから？
+                //this._.dummy.el.lastElementChild.removeChild(nodes[i]); // なぜか削除できない！　TextNodeだから？
+                nodes[i].remove(); // 削除できる
+                console.log(nodes[i].textContent);
                 console.log(p.lastChild, p, [...p.childNodes], 'bi:', p.dataset.si);
+                console.log(this._.dummy.el.lastElementChild.textContent);
+                console.log(p.lastChild?.textContent);
                 if (Node.ELEMENT_NODE===p.lastChild?.nodeType && 'BR'===p.lastElementChild?.tagName) {
                     if (-1===si) {si=0; p.dataset.si=si;}
                     yield* this.#makePage(null, bi, si);
@@ -114,14 +124,14 @@ class PageSplitter {
         return p.lastChild;
     }
     async *#splitSentences(sentences, bi=-1, si=-1) {//:node.textContent.Sentences 一文単位の配列
-        console.log('#splitSentences():', sentences, bi, si);
+        console.log('#splitSentences():', sentences, bi, si, this._.dummy.el.lastElementChild.textContent);
         if (1===sentences.length) {yield* await this.#splitWords(sentences[0].Words, bi, si);}
         else {
             let lastNode = this.#makeLastTextNode(bi, si);
             for (let i=0; i<sentences.length; i++) {
                 lastNode.textContent += sentences[i];
                 if (this._.dummy.without) {
-                    console.log('#splitSentences() 超過:', bi, si, i, sentences[i]);
+                    console.log('#splitSentences() 超過:', bi, si, i, sentences[i], this._.dummy.el.lastElementChild.textContent);
                     lastNode.textContent = lastNode.textContent.slice(0, sentences[i].length*-1);
                     yield* await this.#splitWords(sentences[i].Words, bi, si);
                     lastNode = this._.dummy.el.lastElementChild.lastChild;
@@ -133,18 +143,37 @@ class PageSplitter {
     }
     async *#splitWords(words, bi=-1, si=-1) {//:node.textContent.Words 一語単位の配列
         console.log('#splitWords():', words, bi, si);
-        if (1===words.length) {yield* await this.#splitGraphemes(words[0].Graphemes, bi, si);}
+        if (1===words.length && 15 < words[0].length) {yield* await this.#splitGraphemes(words[0].Graphemes, bi, si);}
         else {
             let lastNode = this.#makeLastTextNode(bi, si);
             for (let i=0; i<words.length; i++) {
                 lastNode.textContent += words[i];
                 if (this._.dummy.without) {
+                    lastNode.textContent = lastNode.textContent.slice(0, words[i].length*-1);
+                    if (15 < words[i].length) { // ０１２３４５６７８９０１２３４５６７８９等の単語として分割できない長い文字列なら一字単位で分割する
+                        console.log('#splitWords() 超過 15字より多いので一字ずつ分割する:', bi, si, i, words[i]);
+                        //lastNode.textContent = lastNode.textContent.slice(0, words[i].length*-1);
+                        yield* await this.#splitGraphemes(words[i].Graphemes, bi, si);
+                        lastNode = this._.dummy.el.lastElementChild.lastChild;
+                        //await new Promise(resolve => setTimeout(resolve, 0)); // イベントループを解放
+                    } else {// 単語として分割された（4文字以下であろう）文字列を次のページにまるごと移す
+                        console.log('#splitWords() 超過:', bi, si, i, words[i]);
+                        yield* this.#makePage(null, bi, si);
+                        const p = this.#makeFirstP(true, bi, ++si);
+                        console.log(p, words[i]);
+                        p.append(words[i]);
+                        console.log(p.textContent);
+                        lastNode = p.lastChild;
+                    }
+                    await new Promise(resolve => setTimeout(resolve, 0)); // イベントループを解放
+                    /*
                     console.log('#splitWords() 超過:', bi, si, i, words[i]);
                     lastNode.textContent = lastNode.textContent.slice(0, words[i].length*-1);
                     yield* await this.#splitGraphemes(words[i].Graphemes, bi, si);
                     lastNode = this._.dummy.el.lastElementChild.lastChild;
                     await new Promise(resolve => setTimeout(resolve, 0)); // イベントループを解放
 //                } else {this._.jp.body.progress.now += words[i].length}
+                    */
                 }
             }
         }
@@ -226,7 +255,15 @@ class Page {
     constructor() {this._ = {}; this._.el = Dom.tags.div({class:'page'}); this._.writingMode=Css.get('--writing-mode');}
     get el() {return this._.el}
     //addTo(root=document.body) {if(Type.isEl(root)){root.appendChild(this.el); this._.r = this.el.getBoundingClientRect(); this.#observe();}}
-    addTo(root=document.body) {if(Type.isEl(root)){root.appendChild(this.el); this._.r = this.el.getBoundingClientRect(); this._.b = Css.getFloat(`--page-block-size`);}}
+    //addTo(root=document.body) {if(Type.isEl(root)){root.appendChild(this.el); this._.r = this.el.getBoundingClientRect(); this._.b = Css.getFloat(`--page-block-size`);}}
+    addTo(root=document.body) {
+        if (Type.isEl(root)) {
+            root.appendChild(this.el); 
+            this._.r = this.el.getBoundingClientRect(); 
+            this._.b = Css.getFloat(`--page-block-size`);
+        }
+        this._.writingMode = Css.get('--writing-mode');
+    }
     show() {this._.el.classList.add('show')}
     hide() {this._.el.classList.remove('show')}
     get isVertical() {return 'vertical-rl'===this._.writingMode}
@@ -238,8 +275,10 @@ class Page {
         // writingModeを取得する。block方向に超過したか確認し、超過ならtrueを返す
         const r = this._.el.lastElementChild.getBoundingClientRect();
         //return this.isVertical ? (r.left < 0) : (Css.getFloat(`--page-block-size`) < r.bottom);
-        console.log(this._.b , r.bottom , this._.r.y);
-        return this.isVertical ? (r.left < 0) : (this._.b < (r.bottom - this._.r.y));
+        const res = this.isVertical ? (r.left < 0) : (this._.b < (r.bottom - this._.r.y));
+        console.log('without:', res, 'isV:', this.isVertical, 'b:', this._.b , 'bottom:', r.bottom , 'y:', this._.r.y, 'left:', r.left, 'txt:', this._.el.lastElementChild.textContent);
+        return res;
+        //return this.isVertical ? (r.left < 0) : (this._.b < (r.bottom - this._.r.y));
         //return this.isVertical ? (r.left < 0) : (Css.getFloat(`--page-block-size`) < r.bottom);
         
     }

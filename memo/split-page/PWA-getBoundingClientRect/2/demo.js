@@ -74,14 +74,16 @@ class Demo {
             console.log('次に進む', nowPage);
             nowPage.nextElementSibling.classList.add('show');
             nowPage.classList.remove('show');
-        } else {this.#prevPage(nowPage)} // 最期のページで次に進もうとしても前に戻る
+        //} else {this.#prevPage(nowPage)} // 最期のページで次に進もうとしても前に戻る
+        } // 最期のページで次に進もうとしても何もしない
     }
     #prevPage(nowPage) {
         if (nowPage.previousElementSibling) {
             console.log('前に戻る', nowPage);
             nowPage.previousElementSibling.classList.add('show');
             nowPage.classList.remove('show');
-        } else {this.#nextPage(nowPage)} // 最初のページで前に戻ろうとしても次に進む
+        //} else {this.#nextPage(nowPage)} // 最初のページで前に戻ろうとしても次に進む
+        } // 最初のページで前に戻ろうとしても何もしない
     }
 }
 window.Demo = Demo;
