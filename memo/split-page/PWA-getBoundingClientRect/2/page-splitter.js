@@ -10,12 +10,20 @@ class PageSplitter {
     }
     get pages() {return this._.pages}
 
-    async *generateAsync(manuscript) {
+//    async *generateAsync(manuscript) {
+    //async *generateAsync(manuscript, viewer=document.body) {
+    async *generateAsync(viewer=document.body) {
+        console.log('generateAsync() start');
         this._.dummy.show();
-        this._.dummy.addTo();
+        this._.dummy.addTo(viewer);
         this._.pages = [];
-        this._.jp.manuscript = manuscript;
+//        this._.jp.manuscript = manuscript;
         yield* this.#makeCover();
+//        const cover = this.#makeCover();
+//        console.log(cover);
+//        cover.dataset.page = 0;
+//        this._.pages.push(cover);
+//        yield* cover;
         await new Promise(resolve => setTimeout(resolve, 0)); // イベントループを解放
         console.log(this._.jp.body);
         console.log(this._.jp.body.manuscript.length);
@@ -52,8 +60,8 @@ class PageSplitter {
             await new Promise(resolve => setTimeout(resolve, 0)); // イベントループを解放
         }
         this._.jp.body.progress.now -= 2; //+2はTextBlockの区切り文字である二連改行\n\nの文字数のうち末尾のものを削除するため
-        yield* this.#makePage();
         this._.dummy.hide();
+        yield* this.#makePage();
     }
     get #isNotInChar() {
         const p = Dom.tags.p('あ');
@@ -224,6 +232,7 @@ class PageSplitter {
         page.classList.remove('show');
         page.dataset.page = this._.pages.length + 1;
         this._.pages.push(page);
+        console.log('#makePage():', page.dataset.page, this._.pages)
         // ダミーを初期化し残留テキストを追加する
         this._.dummy.el.innerHTML = '';
         this._.dummy.el.append(...this.#getChildren(n, bi, si))
@@ -261,8 +270,10 @@ class Page {
             root.appendChild(this.el); 
             this._.r = this.el.getBoundingClientRect(); 
             this._.b = Css.getFloat(`--page-block-size`);
+            this._.columnCount = Css.getInt(`--column-count`);
         }
         this._.writingMode = Css.get('--writing-mode');
+        console.log('Page.addTo() writingMode:', this._.writingMode);
     }
     show() {this._.el.classList.add('show')}
     hide() {this._.el.classList.remove('show')}
@@ -274,14 +285,24 @@ class Page {
         if (null===this._.el.lastElementChild) {return false}
         // writingModeを取得する。block方向に超過したか確認し、超過ならtrueを返す
         const r = this._.el.lastElementChild.getBoundingClientRect();
-        //return this.isVertical ? (r.left < 0) : (Css.getFloat(`--page-block-size`) < r.bottom);
-        const res = this.isVertical ? (r.left < 0) : (this._.b < (r.bottom - this._.r.y));
-        console.log('without:', res, 'isV:', this.isVertical, 'b:', this._.b , 'bottom:', r.bottom , 'y:', this._.r.y, 'left:', r.left, 'txt:', this._.el.lastElementChild.textContent);
+        const isB = this.#withoutBlock(r);
+        const res = (1===this._.columnCount) ? isB : this.#withoutInline(r);
+        console.log('without:', res);
         return res;
+        //return (1===this._.columnCount) ? isB : (isB && this.#withoutInline(r));
+        /*
+        //return this.isVertical ? (r.left < 0) : (Css.getFloat(`--page-block-size`) < r.bottom);
+        const res = this.isVertical ? (r.left < 0) : (this._.b < (r.bottom - this._.r.y)); // block方向の超過真偽
+        console.log('without:', res, 'isV:', this.isVertical, 'b:', this._.b , 'bottom:', r.bottom , 'y:', this._.r.y, 'left:', r.left, 'txt:', this._.el.lastElementChild.textContent, 'cc:',this._.columnCount, 'without:', (1 < this._.columnCount) ? (this.isVertical ? (this._.b < (r.bottom - this._.r.y)) : (this._.r.width < r.right)) : res, 'this.width:', this._.r.width, 'right', r.right);
+        return (1 < this._.columnCount) ? (res && (this.isVertical ? (this._.b < (r.bottom - this._.r.y))) : (this._.r.width < r.right)) : res;
+        //return (res && 1 < this._.columnCount) ? (this.isVertical ? (this._.b < (r.bottom - this._.r.y)) : (this._.r.width < r.right)) : res;
+//        return res;
         //return this.isVertical ? (r.left < 0) : (this._.b < (r.bottom - this._.r.y));
         //return this.isVertical ? (r.left < 0) : (Css.getFloat(`--page-block-size`) < r.bottom);
-        
+        */
     }
+    #withoutBlock(r) {return this.isVertical ? (r.left < 0) : (this._.b < (r.bottom - this._.r.y));}// block方向の超過真偽
+    #withoutInline(r) {return this.isVertical ? (this._.b < (r.bottom - this._.r.y)) : (this._.r.width < r.right);}// inline方向の超過真偽
     /*
     #observe() {
         if (this._.observer) {return}

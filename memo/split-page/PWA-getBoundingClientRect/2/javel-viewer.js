@@ -18,13 +18,14 @@ class JavelViewer {
         writingMode: 'vertical-rl',
     } }
     #setOptions(options) {
+        console.log('#setOptions() options:', options);
         const O = {...this.#defaultOptions, ...options};
         ['viewer', 'editor'].map(n=>{if (!Type.isEl(O[n])) {O[n]=null;}});
         if (!Type.isStr(O.javel)) {O.javel='';}
         if (!O.javel && (Type.isEl(O.editor) && !!O.editor.value)) {O.javel = O.editor.value}
         if (!Type.isEl(O.viewer)) {O.viewer=document.body;}
-        if (Number.isFinite(O.width)) {O.width=document.body.clientWidth}
-        if (Number.isFinite(O.height)) {O.width=window.innerHeight}//document.documentElement.clientHeight（横スクロールバーの高さも含まれるが表示しないため無問題）
+        if (!Number.isFinite(O.width)) {O.width=document.body.clientWidth}
+        if (!Number.isFinite(O.height)) {O.width=window.innerHeight}//document.documentElement.clientHeight（横スクロールバーの高さも含まれるが表示しないため無問題）
         if (!this.#isValidWritingMode(O.writingMode)) {O.writingMode='vertical-rl';}
 //        Css.set('writing-mode', 'var(--writing-mode)', this._.viewer);
         Css.set('--writing-mode', O.writingMode);
@@ -77,8 +78,11 @@ name: 著者名
     }
     async #setup() {
         Css.set('--writing-mode', this._.O.writingMode);
-        Css.set(`--page-inline-size`, `${this.isVertical ? this._.O.height : this._.O.width}px`)
-        Css.set(`--page-block-size`, `${this.isVertical ? this._.O.width: this._.O.height}px`)
+        Css.set(`--page-inline-size`, `${this.#isVertical ? this._.O.height : this._.O.width}px`);
+        Css.set(`--page-block-size`, `${this.#isVertical ? this._.O.width: this._.O.height}px`);
+        Css.set(`--column-count`, `2`);
+
+        console.log('JavelViewer#setup() writingMode:', Css.get('--writing-mode'), Css.get('--page-inline-size'), Css.get('--page-block-size'), this.#isVertical, this._.O.width, this._.O.height);
 //        ['width', 'height'].map(n=>Css.set(`--page-${this.isVertical ? '' : n}-size`, `${n}px`));
         //['inline', 'block'].map(n=>Css.set(`--page-${n}-size`, Css.getInt(`${n}-size`, O.viewer}+'px'));
         /*
@@ -98,7 +102,8 @@ name: 著者名
         await this.#load();
         //this._.O.viewer.querySelector('[name="error"]').style.display = 'none';
         this._.O.viewer.querySelector('[name="loading"]').style.display = 'block';
-        for await (let page of this._.splitter.generateAsync()) {
+        //for await (let page of this._.splitter.generateAsync()) {
+        for await (let page of this._.splitter.generateAsync(this._.O.viewer)) {
             console.log('ページ数:',page.dataset.page)
             this._.O.viewer.appendChild(page);
             this._.O.viewer.querySelector('[name="loading-all-page"]').textContent = page.dataset.page;
@@ -107,7 +112,7 @@ name: 著者名
         this._.O.viewer.querySelector('[name="loading"]').style.display = 'none';
         // ノンブルを表示する（未実装）
         this._.O.viewer.querySelector('[name="loading-all-page"]').textContent = `${this._.O.viewer.querySelector(`[data-page]:last-child`).dataset.page}`;
-        this._.O.viewer.classList.add('show');
+        this._.O.viewer.querySelector('.page:not(.dummy)').classList.add('show');
         this.#listen();
         this._.O.viewer.focus();
         /*
@@ -131,7 +136,7 @@ name: 著者名
         //Dom.q(`[name="demo-view"]`).listen('click', async(e)=>{
         this._.O.viewer.addEventListener('click', async(e)=>{
 //            const nowPage = Dom.q(`[name="demo-view"] *.page.show:not(.dummy)`);
-            const nowPage = this._.O.viewer.querySelector('.page.show');
+            const nowPage = this._.O.viewer.querySelector('.page.show:not(.dummy)');
             console.log(nowPage)
             if (this.#isHorizontal) {
                 if (this.#isClickLeft(e.clientX)) {this.#prevPage(nowPage)}
@@ -146,7 +151,7 @@ name: 著者名
 //        Dom.q(`[name="demo-view"]`).addEventListener('keyup', async(e)=>{
         this._.O.viewer.addEventListener('keyup', async(e)=>{
             //const nowPage = Dom.q(`[name="demo-view"] *.page.show:not(.dummy)`);
-            const nowPage = this._.O.viewer.querySelector('.page.show');
+            const nowPage = this._.O.viewer.querySelector('.page.show:not(.dummy)');
             if (e.shiftKey) {
                 if ([' ', 'Enter'].some(k=>k===e.key)) {this.#prevPage(nowPage);}
             } else {
@@ -172,21 +177,30 @@ name: 著者名
     #isClickRight(x, y) {return (this._.O.width / 2) <= x}//画面を左右に二分割したとき左半分をクリックしたか
     #nextPage(nowPage) {
         if (nowPage.nextElementSibling) {
+            if (this.#isSelection) {return}
             console.log('次に進む', nowPage);
-            nowPage.nextElementSibling.classList.add('show');
-            nowPage.classList.remove('show');
+            if (!nowPage.nextElementSibling.classList.contains('page') || nowPage.nextElementSibling.classList.contains('dummy')) {}// 最初のページで前に戻ろうとしても次に進む
+            else {
+                nowPage.nextElementSibling.classList.add('show');
+                nowPage.classList.remove('show');
+            }
         //} else {this.#prevPage(nowPage)} // 最期のページで次に進もうとしても前に戻る
         } // 最期のページで次に進もうとしても何もしない
     }
     #prevPage(nowPage) {
         if (nowPage.previousElementSibling) {
+            if (this.#isSelection) {return}
             console.log('前に戻る', nowPage);
-            if (!nowPage.previousElementSibling.classList.contains('page')) {return}// 最初のページで前に戻ろうとしてもerrorやloadingは表示しない
-            nowPage.previousElementSibling.classList.add('show');
-            nowPage.classList.remove('show');
+            //if (!nowPage.previousElementSibling.classList.contains('page')) {return}// 最初のページで前に戻ろうとしてもerrorやloadingは表示しない
+            if (!nowPage.previousElementSibling.classList.contains('page') || nowPage.previousElementSibling.classList.contains('dummy')) {this.#nextPage(nowPage)}// 最初のページで前に戻ろうとしても次に進む
+            else {
+                nowPage.previousElementSibling.classList.add('show');
+                nowPage.classList.remove('show');
+            }
         //} else {this.#nextPage(nowPage)} // 最初のページで前に戻ろうとしても次に進む
         } // 最初のページで前に戻ろうとしても何もしない
     }
+    get #isSelection() {return 0 < window.getSelection().toString().length;}
 }
 window.JavelViewer = JavelViewer;
 })();

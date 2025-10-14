@@ -10,7 +10,7 @@ window.addEventListener('DOMContentLoaded', async(event) => {
     const parser = new JavelParser();
     const splitter = new PageSplitter(parser);
 //    const viewer = new PageViewer();
-    const demo = new Demo(parser, splitter);
+//    const demo = new Demo(parser, splitter);
     const viewer = new JavelViewer();
     // console.log()
     await viewer.make({

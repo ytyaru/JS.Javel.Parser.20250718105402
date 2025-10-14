@@ -63,7 +63,7 @@
   .tip-card {display:flex; justify-content:center; align-items:center; border:1px solid currentColor; box-sizing:border-box; font-family:monoscape; line-height:1em; padding:0 0.25em 0 0.25em; margin:0;}
 
     /* 640未満,640以上 */
-  [name="demo"] {display:flex;justify-content:flex-start;align-items:center;list-style:none;}
+  [name="demo"] {display:flex;justify-content:flex-start;align-items:center;list-style:none;box-sizing:border-box;padding:0; margin:0;}
   [name="demo"] > div, [name="demo"] > textarea {flex-basis:100%; height:auto; aspect-ratio:16/9;box-sizing:border-box;}/* 640px 以下 に適用される*/
   @media screen and (min-width: 640px) {[name="demo"] > div, [name="demo"] > textarea {flex-basis:calc(100% / 2); height:auto; aspect-ratio:16/9;}}/* 640px以上に適用されるCSS（タブレット用） */
     /* 640未満,640以上,960以上 */
@@ -73,8 +73,10 @@
   @media screen and (min-width: 640px) {[name="demo"] > div, [name="demo"] > textarea {flex-basis: calc(100% / 2);}}
   @media screen and (min-width: 960px) {[name="demo"] > div, [name="demo"] > textarea {flex-basis: calc(100% / 3);}}
   */
-    [name="demo-view"] {
-        
+    [name="demo-view"], [name="demo-edit"] {
+        display:block;
+        box-sizing:border-box;
+        padding:0; margin:0;
     }
   </style>
 </head>
@@ -365,7 +367,7 @@
 
   <button name="view">閲覧する</button>
   <button name="prev">前</button><span name="nowPageNum"></span>/<span name="allPageNum"></span><button name="next">次</button></button><span name="progressRate"></span>
-  <textarea name="manuscript" style="width:100%;">
+  <textarea name="manuscript" style="width:100%; box-sizing:border-box;">
 ---
 title: 作品タイトル
 catch: 作品キャッチコピー
