@@ -83,7 +83,13 @@ class PageSplitter {
             Dom.tags.p({'data-name':'author.name'}, ...this._.jp.meta.el.author.name[0].childNodes),
             Dom.tags.p({'data-name':'obi'}, ...this._.jp.meta.el.obi),
         );
-        yield* this.#makePage();
+        /*
+        const page = this.#_makePage();
+        console.log(page);
+        page.classList.add('spread');
+        yield page;
+        */
+        yield* this.#makeSpreadPage();
     }
     async *#splitNodes(nodes, inlines, bi=-1, si=-1) {
         let p = this.#makeFirstP(false, bi, si);
@@ -225,7 +231,7 @@ class PageSplitter {
 //            this._.jp.body.progress.now += graphemes[i].length;
         }
     }
-    *#makePage(n, bi=-1, si=-1) {// n:残留TextNode or 文字列
+    #_makePage(n, bi=-1, si=-1) {// n:残留TextNode or 文字列
         // ページを追加する
         const page = this._.dummy.el.cloneNode(true);
         page.classList.remove('dummy');
@@ -237,6 +243,28 @@ class PageSplitter {
         this._.dummy.el.innerHTML = '';
         this._.dummy.el.append(...this.#getChildren(n, bi, si))
         console.log(`page:${page.dataset.page} now/all:${this._.jp.body.progress.now}/:${this._.jp.body.progress.all} **********************`);
+        return page;
+    }
+    *#makePage(n, bi=-1, si=-1) {// n:残留TextNode or 文字列
+        yield this.#_makePage(n, bi=-1, si=-1);
+        /*
+        // ページを追加する
+        const page = this._.dummy.el.cloneNode(true);
+        page.classList.remove('dummy');
+        page.classList.remove('show');
+        page.dataset.page = this._.pages.length + 1;
+        this._.pages.push(page);
+        console.log('#makePage():', page.dataset.page, this._.pages)
+        // ダミーを初期化し残留テキストを追加する
+        this._.dummy.el.innerHTML = '';
+        this._.dummy.el.append(...this.#getChildren(n, bi, si))
+        console.log(`page:${page.dataset.page} now/all:${this._.jp.body.progress.now}/:${this._.jp.body.progress.all} **********************`);
+        yield page;
+        */
+    }
+    *#makeSpreadPage(n, bi=-1, si=-1) {// 見開きページ
+        const page = this.#_makePage(n, bi, si);
+        page.classList.add('spread');
         yield page;
     }
     #getChildren(n, bi=-1, si=-1) {
@@ -285,10 +313,18 @@ class Page {
         if (null===this._.el.lastElementChild) {return false}
         // writingModeを取得する。block方向に超過したか確認し、超過ならtrueを返す
         const r = this._.el.lastElementChild.getBoundingClientRect();
+//        const isB = this.#withoutBlock(r);
+//        const isI = this.#withoutInline(r);
+//        return isI;
+        return this.#withoutInline(r);
+        /*
         const isB = this.#withoutBlock(r);
         const res = (1===this._.columnCount) ? isB : this.#withoutInline(r);
-        console.log('without:', res);
+        console.log('without:', res, isB, this.#withoutInline(r));
+        console.log('isB.false:', (this._.b < (r.bottom - this._.r.y)));
+        console.log('cc:', this._.columnCount, 'isV:',this.isVertical, 'r.left:', r.left, 'b:', this._.b, 'bottom:', r.bottom, 'this.y:', this._.r.y, 'this.width:', this._.r.width, 'right:', r.right);
         return res;
+        */
         //return (1===this._.columnCount) ? isB : (isB && this.#withoutInline(r));
         /*
         //return this.isVertical ? (r.left < 0) : (Css.getFloat(`--page-block-size`) < r.bottom);

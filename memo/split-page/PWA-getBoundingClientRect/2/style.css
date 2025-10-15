@@ -2,7 +2,7 @@
 :root {
     --page-inline-size: 640px;
     --page-block-size: 480px;
-    --column-width: 1;
+/*    --column-width: 1;*/
     --column-count: auto;
     --column-gap: 2em;
     --writing-mode: horizontal-tb; /*vertical-rl*/
@@ -44,7 +44,7 @@ em {
     display: none;
     inline-size: var(--page-inline-size);
     block-size: var(--page-block-size);
-    column-width: var(--column-width);
+    /*column-width: var(--column-width);*/
     column-count: var(--column-count);
     column-gap: var(--column-gap);
     writing-mode: var(--writing-mode);
@@ -53,7 +53,11 @@ em {
     line-height: var(--line-height);
     letter-spacing: var(--letter-spacing);
     box-sizing: border-box;
+    /*padding-block-end:16px;*/ /* footer分の余白 */
 }
 .page.show {display: block;}
 /*.page.dummy {display: block;}*/
+.page.spread { /* 見開きページ */
+    column-count: 1;
+}
 button[name="install"] {width:100%; height:100%;}

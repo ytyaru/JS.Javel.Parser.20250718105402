@@ -35,8 +35,8 @@ class JavelViewer {
     #makeLoading() {
         if (!this._.O.viewer.querySelector('[name="loading"]')) {
             this._.O.viewer.append(Dom.tags.div({name:'loading', style:'display:none;'}, 
-                Dom.tags.span({name:'loading-rate'}, '0'), '% ',
-                Dom.tags.span({name:'loading-now-page'}), '/', Dom.tags.span({name:'loading-all-page'}),
+                Dom.tags.span({name:'loading-rate'}, '0'),
+                '　', Dom.tags.span({name:'loading-all-page'}), 'ページ', 
                 Dom.tags.br(), Dom.tags.span({name:'loading-message'}, '読込中……しばしお待ち下さい'),
             ));
         }
@@ -76,12 +76,77 @@ name: 著者名
             throw err;
         }
     }
-    async #setup() {
+    #makeBookDiv() {
+//        const book = Dom.q(`[name="book"]`);
+        const book = this._.O.viewer.querySelector(`[name="book"]`);
+        console.log('#makeBookDiv():', book);
+        if (book) {book.innerHTML = ''; return book;}
+        //else {const b = Dom.tags.div({name:'book', style:'display:block;padding:0;margin:0;box-sizing:border-box;', 'data-all-page':0});this._.O.viewer.appendChild(b); return b;}
+        //else {const b = Dom.tags.div({name:'book', style:'position:relative;display:block;padding:0;margin:0;box-sizing:border-box;', 'data-all-page':0});this._.O.viewer.appendChild(b); return b;}
+        //else {return Dom.tags.div({name:'book', style:'display:block;padding:0;margin:0;box-sizing:border-box;', 'data-all-page':0});}
+        //else {const b = Dom.tags.div({name:'book', style:'position:relative;display:block;padding:0;margin:0;box-sizing:border-box;', 'data-all-page':0});this._.O.viewer.appendChild(b); return b;}
+        //else {const b = Dom.tags.div({name:'book', style:';display:flex;flex-wrap:wrap;flex-direction:column;align-content:flex-start;padding:0;margin:0;box-sizing:border-box;', 'data-all-page':0});this._.O.viewer.appendChild(b); return b;}
+        else {const b = Dom.tags.div({name:'book', style:';display:block;padding:0;margin:0;box-sizing:border-box;', 'data-all-page':0});this._.O.viewer.appendChild(b); return b;}
+    }
+    #makeFooter(book, calc) {
+        const footer = this._.O.viewer.querySelector(`[name="header"]`);
+        if (footer) {footer.style.display = 'none'; footer.innerHTML = ''; return footer;}
+        else {
+            // position:fixed;bottom:0;
+            // display:flex;flex-direction:row;
+            const f = Dom.tags.div({name:'footer', style:'display:none;align-items:flex-start;gap:1em;padding:0;margin:0;box-sizing:border-box;font-family:monoscape;font-size:16px;line-height:1em;'},
+            //const f = Dom.tags.div({name:'footer', style:'display:flex;align-items:flex-start;gap:1em;position:absolute;bottom:0;padding:0;margin:0;box-sizing:border-box;font-family:monoscape;font-size:16px;'},
+//            const f = Dom.tags.div({name:'footer', style:'display:flex;align-items:flex-start;gap:1em;padding:0;margin:0;box-sizing:border-box;font-family:monoscape;font-size:16px;'},
+                Dom.tags.div({name:'time', style:'display:block;padding:0;margin:0;box-sizing:border-box;font-family:monoscape;'}, '00:00'),
+                Dom.tags.div({name:'nombre', style:'display:flex;align-items:flex-start;padding:0;margin:0;box-sizing:border-box;font-family:monoscape;'}, 
+                    Dom.tags.span({name:'nowPage'}, '0'),
+                    '/',
+                    Dom.tags.span({name:'allPage'}, '0'),
+                ),
+                //Dom.tags.div({name:'title', style:`display:block;padding:0;margin:0;box-sizing:border-box;font-family:monoscape;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;inline-size:${calc.inlineSize}px;}`}, '作品名０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９'),
+                Dom.tags.div({name:'title', style:`display:block;padding:0;margin:0;box-sizing:border-box;font-family:monoscape;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}`}, '作品名'),
+                Dom.tags.div({name:'setting', style:'display:block;padding:0;margin:0;box-sizing:border-box;font-family:monoscape;'}, '⚙'),
+            );
+//            book.appendChild(f); return f;
+            this._.O.viewer.appendChild(f); return f;
+//            this._.O.viewer.querySelector(`[name="book"]`).appendChild(f); return f;
+//            this._.O.viewer.appendChild(f); return f;
+        }
+    }
+    #setSize() {
+        const inlineSize = this.#isVertical ? this._.O.height : this._.O.width;
+//        const blockSize = this.#isVertical ? this._.O.width: this._.O.height;
+        const blockSize = (this.#isVertical ? this._.O.width: this._.O.height - 16); // -16はfooter
+        const columnCount = 1040 < inlineSize ? 2 : 1;
+        const columnWidth = 1===columnCount ? inlineSize : inlineSize + Css.getFloat('--column-gap')
         Css.set('--writing-mode', this._.O.writingMode);
-        Css.set(`--page-inline-size`, `${this.#isVertical ? this._.O.height : this._.O.width}px`);
-        Css.set(`--page-block-size`, `${this.#isVertical ? this._.O.width: this._.O.height}px`);
-        Css.set(`--column-count`, `2`);
+        //Css.set(`--page-inline-size`, `${this.#isVertical ? this._.O.height : this._.O.width}px`);
+        Css.set(`--page-inline-size`, `${inlineSize}px`);
+        Css.set(`--page-block-size`, `${blockSize}px`);
+        //Css.set(`--column-count`, `2`);
+        Css.set(`--column-count`, `${columnCount}`);
+        console.log('columnCount:', columnCount, 'inline:', inlineSize, 'block:', blockSize, 'mode:', this._.O.writingMode);
+        const inlineChars = ((40 + (40*Css.getFloat('--letter-spacing'))) * columnCount) + Css.getFloat('--column-gap');
+        const inlineFtSz = Math.max(16, inlineSize/inlineChars);
+        Css.set(`--font-size`, `${inlineFtSz}px`);
+        console.log('font-size:', inlineFtSz);
+        //Math.max(16, inlineSize/(40+(1===columnCount ? 0 : Css.getFloat('--column-gap'))+(40*Css.getFloat('--letter-spacing'))));
 
+        this._.O.viewer.style.blockSize = `${blockSize + 16}px`;
+        this._.O.viewer.style.inlineSize = `${inlineSize}px`;
+        this._.O.editor.style.blockSize = `${blockSize + 16}px`;
+        this._.O.editor.style.inlineSize = `${inlineSize}px`;
+        return {
+            inlineSize: inlineSize,
+            blockSize: blockSize,
+            columnCount: columnCount,
+            columnWidth: columnWidth,
+            inlineFontSize: inlineFtSz,
+        }
+    }
+    async #setup() {
+        const calc = this.#setSize();
+        console.log('calc:', calc);
         console.log('JavelViewer#setup() writingMode:', Css.get('--writing-mode'), Css.get('--page-inline-size'), Css.get('--page-block-size'), this.#isVertical, this._.O.width, this._.O.height);
 //        ['width', 'height'].map(n=>Css.set(`--page-${this.isVertical ? '' : n}-size`, `${n}px`));
         //['inline', 'block'].map(n=>Css.set(`--page-${n}-size`, Css.getInt(`${n}-size`, O.viewer}+'px'));
@@ -102,17 +167,27 @@ name: 著者名
         await this.#load();
         //this._.O.viewer.querySelector('[name="error"]').style.display = 'none';
         this._.O.viewer.querySelector('[name="loading"]').style.display = 'block';
+        const book = this.#makeBookDiv();
+        const footer = this.#makeFooter(book, calc);
         //for await (let page of this._.splitter.generateAsync()) {
         for await (let page of this._.splitter.generateAsync(this._.O.viewer)) {
             console.log('ページ数:',page.dataset.page)
+            book.appendChild(page);
+            this._.O.viewer.querySelector('[name="loading-all-page"]').textContent = page.dataset.page;
+            this._.O.viewer.querySelector('[name="loading-rate"]').textContent = `${this._.parser.body.progress.rate.toFixed(100===this._.parser.body.progress.rate ? 0 : 1)}%`;
+            /*
             this._.O.viewer.appendChild(page);
             this._.O.viewer.querySelector('[name="loading-all-page"]').textContent = page.dataset.page;
             this._.O.viewer.querySelector('[name="loading-rate"]').textContent = `${this._.parser.body.progress.rate.toFixed(100===this._.parser.body.progress.rate ? 0 : 1)}%`;
+            */
         }
         this._.O.viewer.querySelector('[name="loading"]').style.display = 'none';
+        footer.style.display = 'flex';
         // ノンブルを表示する（未実装）
-        this._.O.viewer.querySelector('[name="loading-all-page"]').textContent = `${this._.O.viewer.querySelector(`[data-page]:last-child`).dataset.page}`;
-        this._.O.viewer.querySelector('.page:not(.dummy)').classList.add('show');
+//        this._.O.viewer.querySelector('[name="loading-all-page"]').textContent = `${this._.O.viewer.querySelector(`[data-page]:last-child`).dataset.page}`;
+        this._.O.viewer.querySelector('[name="loading-all-page"]').textContent = `${book.querySelector(`[data-page]:last-child`).dataset.page}`;
+        //this._.O.viewer.querySelector('.page:not(.dummy)').classList.add('show');
+        book.querySelector('.page:not(.dummy)').classList.add('show');
         this.#listen();
         this._.O.viewer.focus();
         /*
