@@ -5,6 +5,7 @@
 /*    --column-width: 1;*/
     --column-count: auto;
     --column-gap: 2em;
+    --column-fill: auto; /* auto:前段から詰める, balance:前後の段を均等に埋める */
     --writing-mode: horizontal-tb; /*vertical-rl*/
     --text-orientation: mixed; /*upright*/
     --writing-mode: vertical-rl; /*horizontal-tb*/
@@ -47,6 +48,7 @@ em {
     /*column-width: var(--column-width);*/
     column-count: var(--column-count);
     column-gap: var(--column-gap);
+    column-fill: var(--column-fill);
     writing-mode: var(--writing-mode);
     text-orientation: var(--text-orientation);
     font-size: var(--font-size);

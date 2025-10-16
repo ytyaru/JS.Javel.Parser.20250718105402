@@ -81,8 +81,13 @@ class PageSplitter {
         this._.dummy.el.append(
             Dom.tags.h1({'data-name':'title'}, ...this._.jp.meta.el.title[0].childNodes),
             Dom.tags.p({'data-name':'author.name'}, ...this._.jp.meta.el.author.name[0].childNodes),
-            Dom.tags.p({'data-name':'obi'}, ...this._.jp.meta.el.obi),
+//            this._.jp.meta.el.catch ? Dom.tags.h2({'data-name':'catch'}, ...this._.jp.meta.el.catch[0].childNodes) : null,
+//            Dom.tags.p({'data-name':'obi'}, ...this._.jp.meta.el.obi),
         );
+        //if (this._.jp.meta.el.catch) {this._.dummy.el.querySelector('[data-name="author.name"]').after(Dom.tags.h2({'data-name':'catch'}, ...this._.jp.meta.el.catch[0].childNodes));}
+        if (this._.jp.meta.el.catch) {this._.dummy.el.appendChild(Dom.tags.h2({'data-name':'catch'}, ...this._.jp.meta.el.catch[0].childNodes));}
+        if (this._.jp.meta.el.obi) {this._.dummy.el.appendChild(Dom.tags.p({'data-name':'obi'}, ...this._.jp.meta.el.obi));}
+        
         /*
         const page = this.#_makePage();
         console.log(page);
@@ -298,6 +303,7 @@ class Page {
             root.appendChild(this.el); 
             this._.r = this.el.getBoundingClientRect(); 
             this._.b = Css.getFloat(`--page-block-size`);
+            this._.i = Css.getFloat(`--page-inline-size`);
             this._.columnCount = Css.getInt(`--column-count`);
         }
         this._.writingMode = Css.get('--writing-mode');
@@ -311,12 +317,23 @@ class Page {
     set isHorizontal(v) {if (Type.isBln(v)) {this._.writingMode = v ? 'horizontal-tb' : 'vertical-rl'}}
     get without() {
         if (null===this._.el.lastElementChild) {return false}
+//        const R = this.el.getBoundingClientRect();
+//        console.log(this._.r.width , R.width, this._.r.height , R.height);
+//        return (this._.r.width < R.width) || (this._.r.height < R.height);
+//        return this.#isOverflow;
         // writingModeを取得する。block方向に超過したか確認し、超過ならtrueを返す
         const r = this._.el.lastElementChild.getBoundingClientRect();
 //        const isB = this.#withoutBlock(r);
 //        const isI = this.#withoutInline(r);
 //        return isI;
-        return this.#withoutInline(r);
+        //console.log('without():', this.#withoutInline(r), 'isV:', this.isVertical, (this._.b < (r.bottom - this._.r.y)), 'blockSize:',this._.b, (r.bottom - this._.r.y), 'bottom:', r.bottom, 'y:', this._.r.y);
+//        console.log('without():', this.#withoutInline(r), 'isV:', this.isVertical, (this._.i < (r.bottom - this._.r.y)), 'inlineSize:',this._.i, (r.bottom - this._.r.y), 'bottom:', r.bottom, 'y:', this._.r.y);
+        const res = this.isVertical ? this._.r.height < (r.bottom - this._.r.top) : this._.r.width < r.left
+        console.log('without():', res, 'isV:', this.isVertical, 'this.H:', this._.r.height, '(bottom-top):', (r.bottom - this._.r.top), 'bottom:', r.bottom, 'this.top:', this._.r.top);
+        return res;
+        //return this.isVertical ? this._.r.height < r.bottom : this._.r.width < r.left;
+        //return this.#withoutInline(r);
+//        return this.#withoutInline(r) || this.#withoutBlock(r);
         /*
         const isB = this.#withoutBlock(r);
         const res = (1===this._.columnCount) ? isB : this.#withoutInline(r);
@@ -337,8 +354,10 @@ class Page {
         //return this.isVertical ? (r.left < 0) : (Css.getFloat(`--page-block-size`) < r.bottom);
         */
     }
+//    get #isOverflow() {console.log('this._.el.clientWidth:', this._.el.clientWidth, 'this._.el.scrollWidth', this._.el.scrollWidth);return this._.el.clientWidth < this._.el.scrollWidth;}
     #withoutBlock(r) {return this.isVertical ? (r.left < 0) : (this._.b < (r.bottom - this._.r.y));}// block方向の超過真偽
-    #withoutInline(r) {return this.isVertical ? (this._.b < (r.bottom - this._.r.y)) : (this._.r.width < r.right);}// inline方向の超過真偽
+    #withoutInline(r) {return this.isVertical ? (this._.r.bottom < r.top) : (this._.r.width < r.right);}// inline方向の超過真偽
+    //#withoutInline(r) {return this.isVertical ? (this._.i < (r.bottom - this._.r.y)) : (this._.r.width < r.right);}// inline方向の超過真偽
     /*
     #observe() {
         if (this._.observer) {return}

@@ -1,13 +1,15 @@
 (function(){
 class JavelViewer {
     constructor() {
-        this._ = {}
+        this._ = {loaded:false}
         this._.parser = new JavelParser();
         this._.splitter = new PageSplitter(this._.parser);
     }
     async make(options) {
+        this._.loaded = false;
         this.#setOptions(options);
         await this.#setup();
+        this._.loaded = true;
     }
     get #defaultOptions() { return {
         javel: null,
@@ -16,6 +18,7 @@ class JavelViewer {
         width: document.body.clientWidth,
         height: window.innerHeight,
         writingMode: 'vertical-rl',
+        columnCount: null,
     } }
     #setOptions(options) {
         console.log('#setOptions() options:', options);
@@ -27,6 +30,7 @@ class JavelViewer {
         if (!Number.isFinite(O.width)) {O.width=document.body.clientWidth}
         if (!Number.isFinite(O.height)) {O.width=window.innerHeight}//document.documentElement.clientHeight（横スクロールバーの高さも含まれるが表示しないため無問題）
         if (!this.#isValidWritingMode(O.writingMode)) {O.writingMode='vertical-rl';}
+        if (![1,2].some(v=>v===O.columnCount)) {O.columnCount=null}
 //        Css.set('writing-mode', 'var(--writing-mode)', this._.viewer);
         Css.set('--writing-mode', O.writingMode);
         this._.O = O;
@@ -89,7 +93,7 @@ name: 著者名
         else {const b = Dom.tags.div({name:'book', style:';display:block;padding:0;margin:0;box-sizing:border-box;', 'data-all-page':0});this._.O.viewer.appendChild(b); return b;}
     }
     #makeFooter(book, calc) {
-        const footer = this._.O.viewer.querySelector(`[name="header"]`);
+        const footer = this._.O.viewer.querySelector(`[name="footer"]`);
         if (footer) {footer.style.display = 'none'; footer.innerHTML = ''; return footer;}
         else {
             // position:fixed;bottom:0;
@@ -114,10 +118,15 @@ name: 著者名
         }
     }
     #setSize() {
-        const inlineSize = this.#isVertical ? this._.O.height : this._.O.width;
-//        const blockSize = this.#isVertical ? this._.O.width: this._.O.height;
-        const blockSize = (this.#isVertical ? this._.O.width: this._.O.height - 16); // -16はfooter
-        const columnCount = 1040 < inlineSize ? 2 : 1;
+        const W = this._.O.width;
+        const H = this._.O.height - (1===this._.O.columnCount ? 16 : 0); // -16はfooter
+        const inlineSize = this.#isVertical ? H : W;
+        const blockSize = this.#isVertical ? W : H;
+//        const inlineSize = this.#isVertical ? this._.O.height : this._.O.width;
+////        const blockSize = this.#isVertical ? this._.O.width: this._.O.height;
+//        const blockSize = (this.#isVertical ? this._.O.width: this._.O.height - 16); // -16はfooter
+//        //const columnCount = 1040 < inlineSize ? 2 : 1;
+        const columnCount = this._.O.columnCount ? this._.O.columnCount : (1040 < inlineSize ? 2 : 1);
         const columnWidth = 1===columnCount ? inlineSize : inlineSize + Css.getFloat('--column-gap')
         Css.set('--writing-mode', this._.O.writingMode);
         //Css.set(`--page-inline-size`, `${this.#isVertical ? this._.O.height : this._.O.width}px`);
@@ -132,16 +141,22 @@ name: 著者名
         console.log('font-size:', inlineFtSz);
         //Math.max(16, inlineSize/(40+(1===columnCount ? 0 : Css.getFloat('--column-gap'))+(40*Css.getFloat('--letter-spacing'))));
 
-        this._.O.viewer.style.blockSize = `${blockSize + 16}px`;
-        this._.O.viewer.style.inlineSize = `${inlineSize}px`;
-        this._.O.editor.style.blockSize = `${blockSize + 16}px`;
-        this._.O.editor.style.inlineSize = `${inlineSize}px`;
+        this._.O.viewer.style.width = `${this._.O.width}px`;
+        this._.O.viewer.style.height = `${this._.O.height}px`;
+        this._.O.editor.style.width = `${this._.O.width}px`;
+        this._.O.editor.style.height = `${this._.O.height}px`;
+//        this._.O.viewer.style.blockSize = `${blockSize + 16}px`;
+//        this._.O.viewer.style.inlineSize = `${inlineSize}px`;
+//        this._.O.editor.style.blockSize = `${blockSize + 16}px`;
+//        this._.O.editor.style.inlineSize = `${inlineSize}px`;
         return {
+            width: W, height: H,
             inlineSize: inlineSize,
             blockSize: blockSize,
             columnCount: columnCount,
             columnWidth: columnWidth,
-            inlineFontSize: inlineFtSz,
+            columnGap: Css.getFloat('--column-gap') ?? inlineFtSz*2,
+            fontSize: inlineFtSz,
         }
     }
     async #setup() {
@@ -169,6 +184,60 @@ name: 著者名
         this._.O.viewer.querySelector('[name="loading"]').style.display = 'block';
         const book = this.#makeBookDiv();
         const footer = this.#makeFooter(book, calc);
+        // フッタ配置（本文が横書き二段ならフッタは縦書き中央に配置する等。H1=下部H, H2=中央V, V1=下部H, V2=中央H）
+        if (2===this._.O.columnCount) {
+            footer.style.writingMode = this.#isVertical ? 'horizontal-tb' : 'vertical-rl';
+            footer.style.textOrientation = this.#isVertical ? 'mixed' : 'upright';
+            this._.O.viewer.style.position = 'relative';
+            footer.style.display = 'flex';
+            const r = footer.getBoundingClientRect();
+            footer.style.display = 'none';
+            console.log('footer:', r);
+            footer.style.position = 'absolute';
+            footer.style.top = `${this.#isVertical ? (calc.height/2)-(16/2)+(calc.columnGap/2) : ((calc.height/2)-(r.height/2))}px`;
+            footer.style.left = `${this.#isVertical ? ((calc.width/2)-(r.width/2)) : (calc.width/2)-(16/2)+(calc.columnGap/2)}px`;
+//            alert(`${r.width}, ${footer.style.left}, ${(calc.width/2)}, ${(footer.width/2)}, ${Css.getFloat('width',footer)}, ${getComputedStyle(footer).getPropertyValue('width') }`);
+            /*
+            footer.style.top = `${this.#isVertical ? (calc.height/2)-(16/2)+(calc.columnGap/2) : ((calc.height/2)-(Css.getFloat('height',footer)/2))}px`;
+            footer.style.left = `${this.#isVertical ? ((calc.width/2)-(Css.getFloat('width',footer)/2)) : (calc.width/2)-(16/2)+(calc.columnGap/2)}px`;
+            alert(`${footer.style.left}, ${(calc.width/2)}, ${(footer.width/2)}, ${Css.getFloat('width',footer)}, ${getComputedStyle(footer).getPropertyValue('width') }`);
+            */
+            //footer.style.top = `${this.#isVertical ? (calc.height/2)-(16/2)+(calc.columnGap/2) : 0}px`;
+            //footer.style.left = `${this.#isVertical ? 0 : (calc.width/2)-(16/2)+(calc.columnGap/2)}px`;
+            
+            /*
+            footer.style.position = 'flexed';
+            footer.style.top = '50%';
+            footer.style.left = '50%';
+            footer.style.transform = 'translate(-50%, -50%)';
+            */
+        } else {
+            footer.style.writingMode = 'horizontal-tb';
+            footer.style.textOrientation = 'mixed';
+            this._.O.viewer.style.position = null;
+            footer.style.position = null;
+            footer.style.top = null;
+            footer.style.left = null;
+            footer.style.transform = null;
+        }
+        footer.style.zIndex = '10';
+        /*
+        book.style.position = (2===this._.O.columnCount ? 'relative' : null);
+        footer.style.position = (1===this._.O.columnCount ? 'sticky' : null);
+        if (1===this._.O.columnCount) {
+            footer.style.bottom = '0';
+            book.style.display = 'block';
+            book.style.justifyContent = null;
+            book.style.alignItems = null;
+        }
+        else {
+            footer.style.bottom = null;
+            this._.O.viewer.style.display = 'flex';
+            this._.O.viewer.style.justifyContent = 'center';
+            this._.O.viewer.style.alignItems = 'center';
+        }
+        */
+//        footer.style.bottom = (2===this._.O.columnCount ? '0' : '0');
         //for await (let page of this._.splitter.generateAsync()) {
         for await (let page of this._.splitter.generateAsync(this._.O.viewer)) {
             console.log('ページ数:',page.dataset.page)
@@ -182,12 +251,14 @@ name: 著者名
             */
         }
         this._.O.viewer.querySelector('[name="loading"]').style.display = 'none';
-        footer.style.display = 'flex';
+//        footer.style.visibility = 'hidden';
+//        footer.style.display = 'flex';
         // ノンブルを表示する（未実装）
 //        this._.O.viewer.querySelector('[name="loading-all-page"]').textContent = `${this._.O.viewer.querySelector(`[data-page]:last-child`).dataset.page}`;
         this._.O.viewer.querySelector('[name="loading-all-page"]').textContent = `${book.querySelector(`[data-page]:last-child`).dataset.page}`;
         //this._.O.viewer.querySelector('.page:not(.dummy)').classList.add('show');
         book.querySelector('.page:not(.dummy)').classList.add('show');
+        this._.O.viewer.querySelector(`[name="footer"] [name="allPage"]`).textContent = this._.O.viewer.querySelector('[name="loading-all-page"]').textContent;
         this.#listen();
         this._.O.viewer.focus();
         /*
@@ -210,6 +281,7 @@ name: 著者名
         console.log('listen()');
         //Dom.q(`[name="demo-view"]`).listen('click', async(e)=>{
         this._.O.viewer.addEventListener('click', async(e)=>{
+            if (!this._.loaded) {return}
 //            const nowPage = Dom.q(`[name="demo-view"] *.page.show:not(.dummy)`);
             const nowPage = this._.O.viewer.querySelector('.page.show:not(.dummy)');
             console.log(nowPage)
@@ -225,6 +297,7 @@ name: 著者名
 //        Dom.q(`[name="demo-view"]`).setAttribute('tabindex', '0');
 //        Dom.q(`[name="demo-view"]`).addEventListener('keyup', async(e)=>{
         this._.O.viewer.addEventListener('keyup', async(e)=>{
+            if (!this._.loaded) {return}
             //const nowPage = Dom.q(`[name="demo-view"] *.page.show:not(.dummy)`);
             const nowPage = this._.O.viewer.querySelector('.page.show:not(.dummy)');
             if (e.shiftKey) {
@@ -258,6 +331,9 @@ name: 著者名
             else {
                 nowPage.nextElementSibling.classList.add('show');
                 nowPage.classList.remove('show');
+//                this._.O.viewer.querySelector(`[name="footer"]`).style.visiblity = (nowPage.nextElementSibling.classList.containts('spread')) ? 'hidden' : 'visible';
+                this._.O.viewer.querySelector(`[name="footer"]`).style.display = (nowPage.nextElementSibling.classList.contains('spread')) ? 'none' : 'flex';
+                this._.O.viewer.querySelector(`[name="footer"] [name="nowPage"]`).textContent = nowPage.nextElementSibling.dataset.page;
             }
         //} else {this.#prevPage(nowPage)} // 最期のページで次に進もうとしても前に戻る
         } // 最期のページで次に進もうとしても何もしない
@@ -271,9 +347,12 @@ name: 著者名
             else {
                 nowPage.previousElementSibling.classList.add('show');
                 nowPage.classList.remove('show');
+//                this._.O.viewer.querySelector(`[name="footer"]`).style.visiblity = (nowPage.nextElementSibling.classList.containts('spread')) ? 'hidden' : 'visible';
+                this._.O.viewer.querySelector(`[name="footer"]`).style.display = (nowPage.previousElementSibling.classList.contains('spread')) ? 'none' : 'flex';
+                this._.O.viewer.querySelector(`[name="footer"] [name="nowPage"]`).textContent = nowPage.previousElementSibling.dataset.page;
             }
-        //} else {this.#nextPage(nowPage)} // 最初のページで前に戻ろうとしても次に進む
-        } // 最初のページで前に戻ろうとしても何もしない
+        } else {this.#nextPage(nowPage)} // 最初のページで前に戻ろうとしても次に進む
+        //} // 最初のページで前に戻ろうとしても何もしない
     }
     get #isSelection() {return 0 < window.getSelection().toString().length;}
 }

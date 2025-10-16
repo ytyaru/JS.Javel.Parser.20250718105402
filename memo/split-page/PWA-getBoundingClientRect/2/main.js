@@ -21,7 +21,8 @@ window.addEventListener('DOMContentLoaded', async(event) => {
         writingMode:'horizontal-tb', 
 //        writingMode:'vertical-rl', 
         width: Css.getInt('width', Dom.q(`[name="demo-edit"]`)), 
-        height: Css.getInt('height', Dom.q(`[name="demo-edit"]`))
+        height: Css.getInt('height', Dom.q(`[name="demo-edit"]`)),
+        columnCount: 2,
     });
     /*
     console.log(Dom.q(`[name="view"]`))
